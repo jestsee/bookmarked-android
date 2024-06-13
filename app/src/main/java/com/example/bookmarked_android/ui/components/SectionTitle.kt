@@ -1,4 +1,4 @@
-package com.example.bookmarked_android.components
+package com.example.bookmarked_android.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
