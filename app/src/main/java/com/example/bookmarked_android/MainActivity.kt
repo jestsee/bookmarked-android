@@ -6,9 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -16,8 +14,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.bookmarked_android.components.SectionTitle
 import com.example.bookmarked_android.ui.theme.BookmarkedandroidTheme
 
 class MainActivity : ComponentActivity() {
@@ -49,7 +50,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreen() {
-    Scaffold() { innerPadding ->
+    Scaffold(
+        bottomBar = { BottomNavigationBar() }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .padding(innerPadding),
@@ -69,15 +72,7 @@ fun HomeScreen() {
 @Composable
 fun GreetingsText() {
     Column {
-        Text(text = "Hello name")
-        Text(text = "You have bookmarked 140 tweets")
-    }
-}
-
-@Composable
-fun SectionTitle(title: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(text = title)
-        Text(text = "View more")
+        Text(text = "Hello name", fontSize = 36.sp, fontWeight = FontWeight.Medium)
+        Text(text = "You have bookmarked 140 tweets", fontSize = 16.sp)
     }
 }
