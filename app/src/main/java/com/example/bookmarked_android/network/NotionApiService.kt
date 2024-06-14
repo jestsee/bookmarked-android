@@ -1,6 +1,6 @@
 package com.example.bookmarked_android.network
 
-import com.example.bookmarked_android.model.BookmarkedItems
+import com.example.bookmarked_android.model.NotionData
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -19,20 +19,20 @@ private val retrofit =
     Retrofit.Builder()
         .baseUrl(BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
-        .client(client)
+//        .client(client)
         .build()
 
-interface BookmarkApiService {
+interface NotionApiService {
     @POST("databases/{databaseId}/query")
-    suspend fun getBookmarks(
+    suspend fun getNotionData(
         @Header("Authorization") token: String,
         @Path("databaseId") databaseId: String,
         @Header("Notion-Version") version: String = "2022-06-28"
-    ): BookmarkedItems
+    ): NotionData
 }
 
-object BookmarkApi {
-    val retrofitService: BookmarkApiService by lazy {
-        retrofit.create(BookmarkApiService::class.java)
+object NotionApi {
+    val retrofitService: NotionApiService by lazy {
+        retrofit.create(NotionApiService::class.java)
     }
 }
