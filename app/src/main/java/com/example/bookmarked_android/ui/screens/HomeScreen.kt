@@ -17,11 +17,10 @@ import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
 import com.example.bookmarked_android.ui.components.SectionTitle
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 //@Preview(showBackground = true)
 @Composable
-fun HomeScreen(bookmarkedUiState: String) {
+fun HomeScreen(bookmarkedUiState: BookmarkedUiState) {
     Scaffold(
         bottomBar = { BottomNavigationBar() }
     ) { innerPadding ->
@@ -37,7 +36,15 @@ fun HomeScreen(bookmarkedUiState: String) {
                 Text(text = "ini card")
             }
             SectionTitle(title = "Recently bookmarked")
-            ResultScreen(photos = bookmarkedUiState)
+
+            when (bookmarkedUiState) {
+                is BookmarkedUiState.Error -> Text(text = "Error")
+                is BookmarkedUiState.Loading -> Text(text = "Loading...")
+                is BookmarkedUiState.Success -> {
+                    ResultScreen(photos = bookmarkedUiState.bookmarkedList)
+                }
+
+            }
         }
     }
 }

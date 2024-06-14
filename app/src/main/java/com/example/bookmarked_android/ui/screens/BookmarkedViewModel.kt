@@ -1,5 +1,6 @@
 package com.example.bookmarked_android.ui.screens
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -9,8 +10,14 @@ import com.example.bookmarked_android.Config
 import com.example.bookmarked_android.network.BookmarkApi
 import kotlinx.coroutines.launch
 
+sealed interface BookmarkedUiState {
+    data class Success(val bookmarkedList: String) : BookmarkedUiState
+    object Error : BookmarkedUiState
+    object Loading : BookmarkedUiState
+}
+
 class BookmarkedViewModel() : ViewModel() {
-    var bookmarkUiState: String by mutableStateOf("")
+    var bookmarkUiState: BookmarkedUiState by mutableStateOf(BookmarkedUiState.Loading)
         private set
 
     init {
@@ -19,16 +26,17 @@ class BookmarkedViewModel() : ViewModel() {
 
     fun getBookmarks() {
         viewModelScope.launch {
-            try {
+            bookmarkUiState = try {
                 val config = Config()
                 val listResult =
                     BookmarkApi.retrofitService.getBookmarks(
                         "Bearer ${config.notionSecret}",
                         config.databaseId
                     )
-                bookmarkUiState = listResult
+                BookmarkedUiState.Success("Results: ${listResult.nextCursor}")
             } catch (e: Exception) {
-                // TODO: Handle error
+                Log.d("BookmarkedViewModel", "getBookmarks: ${e}")
+                BookmarkedUiState.Error
             }
         }
     }
