@@ -41,7 +41,7 @@ fun HomeScreen(bookmarkedUiState: BookmarkedUiState) {
                 is BookmarkedUiState.Error -> Text(text = "Error")
                 is BookmarkedUiState.Loading -> Text(text = "Loading...")
                 is BookmarkedUiState.Success -> {
-                    ResultScreen(photos = bookmarkedUiState.bookmarkedList)
+                    ResultScreen(photos = bookmarkedUiState.bookmarkedList.get(0).author)
                 }
 
             }
