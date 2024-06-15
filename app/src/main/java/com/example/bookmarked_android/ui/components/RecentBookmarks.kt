@@ -30,7 +30,7 @@ import com.example.bookmarked_android.model.BookmarkItem
 @Composable
 fun RecentBookmarks(items: List<BookmarkItem>) {
     SectionTitle(title = "Recently added")
-    Spacer(modifier = Modifier.size(4.dp))
+    Spacer(modifier = Modifier.size(18.dp))
     LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         items.forEach { item ->
             item { RecentBookmarkItem(item = item) }
@@ -42,7 +42,7 @@ fun RecentBookmarks(items: List<BookmarkItem>) {
 @Composable
 fun RecentBookmarkItem(item: BookmarkItem) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.5f),
         ),
@@ -57,7 +57,7 @@ fun RecentBookmarkItem(item: BookmarkItem) {
             AsyncImage(
                 modifier = Modifier
                     .size(56.dp)
-                    .clip(shape = RoundedCornerShape(20)),
+                    .clip(shape = RoundedCornerShape(32)),
                 model = item.icon, contentDescription = null,
                 placeholder = BrushPainter(
                     Brush.linearGradient(
