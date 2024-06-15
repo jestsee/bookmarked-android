@@ -4,12 +4,10 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.util.fastMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookmarked_android.Config
 import com.example.bookmarked_android.model.BookmarkList
-import com.example.bookmarked_android.model.toBookmarkItem
 import com.example.bookmarked_android.network.NotionApi
 import kotlinx.coroutines.launch
 
@@ -36,7 +34,7 @@ class BookmarkedViewModel() : ViewModel() {
                         "Bearer ${config.notionSecret}",
                         config.databaseId
                     )
-                BookmarkedUiState.Success(BookmarkList(items = listResult.results.fastMap { result -> result.toBookmarkItem() }))
+                BookmarkedUiState.Success(BookmarkList(items = listResult))
             } catch (e: Exception) {
                 Log.d("BookmarkedViewModel", "getBookmarks: ${e}")
                 BookmarkedUiState.Error

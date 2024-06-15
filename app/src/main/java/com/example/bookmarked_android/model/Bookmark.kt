@@ -1,6 +1,8 @@
 package com.example.bookmarked_android.model
 
 import androidx.compose.runtime.Immutable
+import com.google.gson.annotations.SerializedName
+
 
 @Immutable
 data class BookmarkList(
@@ -9,19 +11,38 @@ data class BookmarkList(
 
 @Immutable
 data class BookmarkItem(
-    val id: String,
-    val createdTime: String,
-    val lastEditedTime: String,
-    val icon: String,
+    @SerializedName("author")
     val author: String,
+    @SerializedName("createdTime")
+    val createdTime: String,
+    @SerializedName("icon")
+    val icon: String,
+    @SerializedName("id")
+    val id: String,
+    @SerializedName("isLiked")
+    val isLiked: Boolean,
+    @SerializedName("notionUrl")
+    val notionUrl: String,
+    @SerializedName("publicUrl")
+    val publicUrl: String,
+    @SerializedName("tags")
     val tags: List<Tag>,
-    val url: String,
+    @SerializedName("title")
     val title: String,
+    @SerializedName("tweetUrl")
+    val tweetUrl: String,
+    @SerializedName("tweetedTime")
+    val tweetedTime: String,
+    @SerializedName("updatedTime")
+    val updatedTime: String
 )
 
 @Immutable
 data class Tag(
-    val id: String,
-    val name: String,
+    @SerializedName("color")
     val color: String,
+    @SerializedName("id")
+    val id: String,
+    @SerializedName("name")
+    val name: String
 )
