@@ -1,15 +1,16 @@
 package com.example.bookmarked_android.network
 
-import com.example.bookmarked_android.model.NotionData
+import com.example.bookmarked_android.Config
+import com.example.bookmarked_android.model.BookmarkItem
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
 import retrofit2.http.Header
-import retrofit2.http.POST
 import retrofit2.http.Path
 
-private const val BASE_URL = "https://api.notion.com/v1/" // TODO save as env
+private val baseUrl = Config().baseUrl
 
 // Logger interceptor
 private val interceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
@@ -17,18 +18,17 @@ private val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
 
 private val retrofit =
     Retrofit.Builder()
-        .baseUrl(BASE_URL)
+        .baseUrl(baseUrl)
         .addConverterFactory(GsonConverterFactory.create())
-//        .client(client)
+        .client(client)
         .build()
 
 interface NotionApiService {
-    @POST("databases/{databaseId}/query")
+    @GET("bookmarks/{databaseId}")
     suspend fun getNotionData(
         @Header("Authorization") token: String,
         @Path("databaseId") databaseId: String,
-        @Header("Notion-Version") version: String = "2022-06-28"
-    ): NotionData
+    ): List<BookmarkItem>
 }
 
 object NotionApi {

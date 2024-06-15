@@ -22,14 +22,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.bookmarked_android.model.BookmarkItem
-import com.example.bookmarked_android.model.Tag
 
 @Composable
 fun RecentBookmarks(items: List<BookmarkItem>) {
@@ -53,7 +49,7 @@ fun RecentBookmarkItem(item: BookmarkItem) {
         onClick = { /*TODO*/ }) {
         Row(
             modifier = Modifier
-                .padding(16.dp, 12.dp)
+                .padding(18.dp, 12.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -74,7 +70,8 @@ fun RecentBookmarkItem(item: BookmarkItem) {
             )
             Spacer(modifier = Modifier.size(12.dp))
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
                     text = item.title,
@@ -92,71 +89,57 @@ fun RecentBookmarkItem(item: BookmarkItem) {
         }
     }
 }
-
-@Composable
-fun RecentBookmarkItemOld(item: BookmarkItem) {
-    androidx.compose.material3.ListItem(
-        headlineContent = {
-            Text(
-                text = item.title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        supportingContent = {
-            Text(
-                text = item.author, maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        leadingContent = {
-            AsyncImage(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(shape = RoundedCornerShape(20)),
-                model = item.icon, contentDescription = null,
-                placeholder = BrushPainter(
-                    Brush.linearGradient(
-                        listOf(
-                            Color(color = 0xFFD5D5D5),
-                            Color(color = 0xFF949494),
-                        )
-                    )
-                ),
-            )
-        },
-    )
-}
-
-class RecentBookmarksProvider : PreviewParameterProvider<List<BookmarkItem>> {
-    override val values = sequenceOf(
-        listOf(
-            BookmarkItem(
-                "1fbc60b6-2652-4d7e-8d15-0c1cf749d35e",
-                "ur2024-06-14T08:44:00.000Zl",
-                "2024-06-14T08:44:00.000Z",
-                "https://pbs.twimg.com/profile_images/1737436487912718336/FGWDhP1X_normal.jpg",
-                "Supabase (@supabase)",
-                listOf(Tag("1", "Database", "Green")),
-                "https://x.com/supabase/status/1801447031388705225",
-                "Building Local-First apps?"
-            ),
-            BookmarkItem(
-                "1fbc60b6-2652-4d7e-8d15-0c1cf749d35e",
-                "ur2024-06-14T08:44:00.000Zl",
-                "2024-06-14T08:44:00.000Z",
-                "https://pbs.twimg.com/profile_images/1737436487912718336/FGWDhP1X_normal.jpg",
-                "Supabase (@supabase)",
-                listOf(Tag("1", "Database", "Green")),
-                "https://x.com/supabase/status/1801447031388705225",
-                "PGVECTOR IS NOW FASTER THAN PINECONE. And 75% cheaper thanks to a new open-source extension – introducing pgvectorscale."
-            )
-        )
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RecentBookmarksPreview(@PreviewParameter(RecentBookmarksProvider::class) items: List<BookmarkItem>) {
-    RecentBookmarks(items = items)
-}
+//
+//class RecentBookmarksProvider : PreviewParameterProvider<List<BookmarkItem>> {
+//    private val jsonString = """
+//        "id": "1fbc60b6-2652-4d7e-8d15-0c1cf749d35e",
+//        "createdTime": "2024-06-14T08:44:00.000Z",
+//        "updatedTime": "2024-06-14T08:44:00.000Z",
+//        "icon": "https://pbs.twimg.com/profile_images/1737436487912718336/FGWDhP1X_normal.jpg",
+//        "isLiked": false,
+//        "author": "Supabase (@supabase)",
+//        "tags": [
+//            {
+//                "id": "969fe237-9703-4070-8d20-8e81e65777a9",
+//                "name": "Offline first",
+//                "color": "default"
+//            },
+//            {
+//                "id": "d670ae0c-e32b-40ef-a108-2eb411e50090",
+//                "name": "Local first",
+//                "color": "default"
+//            },
+//            {
+//                "id": "fb89f1f4-4929-4be3-8338-255997b9be6d",
+//                "name": "Database",
+//                "color": "default"
+//            },
+//            {
+//                "id": "303a8535-5b6d-4425-a4c8-dc919fa98bd4",
+//                "name": "Supabase",
+//                "color": "default"
+//            },
+//            {
+//                "id": "f8b708b8-2f21-4ea8-aec5-b4148f056e9b",
+//                "name": "Libraries",
+//                "color": "brown"
+//            }
+//        ],
+//        "tweetedTime": "2024-06-14T02:50:00.000+00:00",
+//        "title": "Building Local-First apps?",
+//        "tweetUrl": "https://x.com/supabase/status/1801447031388705225",
+//        "notionUrl": "https://www.notion.so/Building-Local-First-apps-1fbc60b626524d7e8d150c1cf749d35e",
+//        "publicUrl": "https://jestsee.notion.site/Building-Local-First-apps-1fbc60b626524d7e8d150c1cf749d35e"
+//    """
+//    override val values = sequenceOf(
+//        listOf(
+//            Gson().fromJson(jsonString, BookmarkItem::class.java)
+//        )
+//    )
+//}
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun RecentBookmarksPreview(@PreviewParameter(RecentBookmarksProvider::class) items: List<BookmarkItem>) {
+//    RecentBookmarks(items = items)
+//}
