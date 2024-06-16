@@ -1,6 +1,8 @@
 package com.example.bookmarked_android.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,29 +11,30 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.BrushPainter
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.example.bookmarked_android.model.BookmarkItem
 
 @Composable
 fun RecentBookmarks(items: List<BookmarkItem>) {
-    SectionTitle(title = "Recently added")
+    SectionTitle(title = "Recently bookmarked")
     Spacer(modifier = Modifier.size(18.dp))
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         items.forEach { item ->
             item { RecentBookmarkItem(item = item) }
         }
@@ -42,40 +45,42 @@ fun RecentBookmarks(items: List<BookmarkItem>) {
 @Composable
 fun RecentBookmarkItem(item: BookmarkItem) {
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.5f),
+            containerColor = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0f),
         ),
         onClick = { /*TODO*/ }) {
         Row(
             modifier = Modifier
-                .padding(18.dp, 12.dp)
+//                .padding(18.dp, 12.dp)
                 .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AsyncImage(
+            Box(
                 modifier = Modifier
-                    .size(56.dp)
-                    .clip(shape = RoundedCornerShape(32)),
-                model = item.icon, contentDescription = null,
-                placeholder = BrushPainter(
-                    Brush.linearGradient(
-                        listOf(
-                            Color(color = 0xFFD5D5D5),
-                            Color(color = 0xFF949494),
-                        )
-                    )
-                ),
-            )
+                    .size(64.dp)
+                    .clip(shape = RoundedCornerShape(32))
+                    .background(Color(0xFF7A70FF)),
+            ) {
+                Icon(
+                    modifier = Modifier.align(Alignment.Center).size(28.dp),
+                    imageVector = Icons.Outlined.ThumbUp,
+                    contentDescription = "tips",
+                    tint = Color.White
+                )
+            }
             Spacer(modifier = Modifier.size(12.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
                     text = item.title,
                     fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -83,7 +88,8 @@ fun RecentBookmarkItem(item: BookmarkItem) {
                     text = item.author,
                     maxLines = 1,
                     fontSize = 15.sp,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                 )
             }
         }

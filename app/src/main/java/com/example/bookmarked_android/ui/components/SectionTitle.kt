@@ -8,7 +8,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -28,11 +29,19 @@ fun SectionTitlePreview(@PreviewParameter(SectionTitleProvider::class) title: St
 @Composable
 fun SectionTitle(title: String) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = title, fontSize = 18.sp)
-        Text(text = "View more", fontSize = 14.sp, textDecoration = TextDecoration.Underline)
+        Text(text = title, fontSize = 20.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.sp)
+        Text(
+            text = "View more",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Medium,
+            letterSpacing = 0.sp,
+            color = Color(0xFF7C68E2)
+        )
     }
 }
