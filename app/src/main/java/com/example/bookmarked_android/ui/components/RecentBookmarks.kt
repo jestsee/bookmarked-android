@@ -1,6 +1,8 @@
 package com.example.bookmarked_android.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,52 +12,81 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.model.BookmarkItem
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun RecentBookmarks(items: List<BookmarkItem>) {
+fun RecentBookmarks(bookmarks: List<BookmarkItem>) {
+    var pressedBookmarkId by rememberSaveable { mutableStateOf<String?>(null) }
+    val haptics = LocalHapticFeedback.current
+
     SectionTitle(title = "Recently bookmarked")
-    Spacer(modifier = Modifier.size(18.dp))
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(20.dp)) {
-        items.forEach { item ->
-            item { RecentBookmarkItem(item = item) }
+    Spacer(modifier = Modifier.size(16.dp))
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        items(bookmarks, { it.id }) { bookmark ->
+            RecentBookmarkItem(
+                bookmark,
+                modifier = Modifier.pointerInput(Unit) {
+                    detectTapGestures(
+                        onLongPress = {
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            pressedBookmarkId = bookmark.id
+                        },
+                        onPress = {
+                            tryAwaitRelease()
+                            pressedBookmarkId = null
+                        }
+                    )
+                }
+            )
         }
+
+    }
+
+    if (pressedBookmarkId != null) {
+        BookmarkDialog(
+            bookmark = bookmarks.first { it.id == pressedBookmarkId },
+            onDismissRequest = { pressedBookmarkId = null })
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecentBookmarkItem(item: BookmarkItem) {
+fun RecentBookmarkItem(item: BookmarkItem, modifier: Modifier) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0f),
-        ),
-        onClick = { /*TODO*/ }) {
+        )
+    ) {
         Row(
-            modifier = Modifier
-//                .padding(18.dp, 12.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -66,7 +97,9 @@ fun RecentBookmarkItem(item: BookmarkItem) {
                     .background(Color(0xFF7A70FF)),
             ) {
                 Icon(
-                    modifier = Modifier.align(Alignment.Center).size(28.dp),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(28.dp),
                     imageVector = Icons.Outlined.ThumbUp,
                     contentDescription = "tips",
                     tint = Color.White
@@ -95,57 +128,3 @@ fun RecentBookmarkItem(item: BookmarkItem) {
         }
     }
 }
-//
-//class RecentBookmarksProvider : PreviewParameterProvider<List<BookmarkItem>> {
-//    private val jsonString = """
-//        "id": "1fbc60b6-2652-4d7e-8d15-0c1cf749d35e",
-//        "createdTime": "2024-06-14T08:44:00.000Z",
-//        "updatedTime": "2024-06-14T08:44:00.000Z",
-//        "icon": "https://pbs.twimg.com/profile_images/1737436487912718336/FGWDhP1X_normal.jpg",
-//        "isLiked": false,
-//        "author": "Supabase (@supabase)",
-//        "tags": [
-//            {
-//                "id": "969fe237-9703-4070-8d20-8e81e65777a9",
-//                "name": "Offline first",
-//                "color": "default"
-//            },
-//            {
-//                "id": "d670ae0c-e32b-40ef-a108-2eb411e50090",
-//                "name": "Local first",
-//                "color": "default"
-//            },
-//            {
-//                "id": "fb89f1f4-4929-4be3-8338-255997b9be6d",
-//                "name": "Database",
-//                "color": "default"
-//            },
-//            {
-//                "id": "303a8535-5b6d-4425-a4c8-dc919fa98bd4",
-//                "name": "Supabase",
-//                "color": "default"
-//            },
-//            {
-//                "id": "f8b708b8-2f21-4ea8-aec5-b4148f056e9b",
-//                "name": "Libraries",
-//                "color": "brown"
-//            }
-//        ],
-//        "tweetedTime": "2024-06-14T02:50:00.000+00:00",
-//        "title": "Building Local-First apps?",
-//        "tweetUrl": "https://x.com/supabase/status/1801447031388705225",
-//        "notionUrl": "https://www.notion.so/Building-Local-First-apps-1fbc60b626524d7e8d150c1cf749d35e",
-//        "publicUrl": "https://jestsee.notion.site/Building-Local-First-apps-1fbc60b626524d7e8d150c1cf749d35e"
-//    """
-//    override val values = sequenceOf(
-//        listOf(
-//            Gson().fromJson(jsonString, BookmarkItem::class.java)
-//        )
-//    )
-//}
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun RecentBookmarksPreview(@PreviewParameter(RecentBookmarksProvider::class) items: List<BookmarkItem>) {
-//    RecentBookmarks(items = items)
-//}
