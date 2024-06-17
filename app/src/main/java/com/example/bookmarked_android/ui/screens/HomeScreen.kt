@@ -19,15 +19,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.bookmarked_android.Screen
 import com.example.bookmarked_android.ui.components.BookmarkCarousel
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
 import com.example.bookmarked_android.ui.components.RecentBookmarks
 
 @Composable
-fun HomeScreen(bookmarkedUiState: BookmarkedUiState) {
+fun HomeScreen(navController: NavController, viewModel: BookmarkListViewModel = viewModel()) {
     Scaffold(
         bottomBar = { BottomNavigationBar() }
     ) { innerPadding ->
+        val bookmarkedUiState = viewModel.bookmarkListUiState
+
         Column(
             modifier = Modifier
                 .padding(0.dp, 48.dp, 0.dp, innerPadding.calculateBottomPadding())
@@ -39,14 +44,20 @@ fun HomeScreen(bookmarkedUiState: BookmarkedUiState) {
             GreetingsText()
 //            TODO: search bar
             when (bookmarkedUiState) {
-                is BookmarkedUiState.Error -> Text(text = "Error")
-                is BookmarkedUiState.Loading -> Text(text = "Loading...")
-                is BookmarkedUiState.Success -> {
+                is BookmarkListUiState.Error -> Text(text = "Error")
+                is BookmarkListUiState.Loading -> Text(text = "Loading...")
+                is BookmarkListUiState.Success -> {
                     Column(modifier = Modifier.fillMaxHeight()) {
                         Spacer(modifier = Modifier.size(12.dp))
-                        BookmarkCarousel(bookmarkedUiState.bookmarkedList.items.takeLast(3))
+                        BookmarkCarousel(bookmarkedUiState.bookmarkList.items.takeLast(3))
                         Spacer(modifier = Modifier.size(16.dp))
-                        RecentBookmarks(bookmarkedUiState.bookmarkedList.items.take(5))
+
+                        val onNavigateToDetail =
+                            { id: String -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id") }
+                        RecentBookmarks(
+                            bookmarkedUiState.bookmarkList.items.take(5),
+                            onNavigateToDetail
+                        )
                     }
                 }
 
