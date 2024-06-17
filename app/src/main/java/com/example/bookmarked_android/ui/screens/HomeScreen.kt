@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,7 +30,10 @@ fun HomeScreen(bookmarkedUiState: BookmarkedUiState) {
     ) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(0.dp, 48.dp, 0.dp, innerPadding.calculateBottomPadding()),
+                .padding(0.dp, 48.dp, 0.dp, innerPadding.calculateBottomPadding())
+                .verticalScroll(
+                    rememberScrollState()
+                ),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             GreetingsText()
@@ -46,6 +51,7 @@ fun HomeScreen(bookmarkedUiState: BookmarkedUiState) {
                 }
 
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -58,9 +64,11 @@ fun GreetingsText() {
                 text = "Welcome back,",
                 color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
             )
-            Spacer(modifier = Modifier
-                .height(2.dp)
-                .fillMaxWidth())
+            Spacer(
+                modifier = Modifier
+                    .height(2.dp)
+                    .fillMaxWidth()
+            )
             Text(text = "Olivia Ong!", fontSize = 40.sp, fontWeight = FontWeight.Medium)
         }
     }

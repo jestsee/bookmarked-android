@@ -1,6 +1,5 @@
 package com.example.bookmarked_android.ui.components
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -11,8 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ThumbUp
@@ -39,7 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.model.BookmarkItem
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RecentBookmarks(bookmarks: List<BookmarkItem>) {
     var pressedBookmarkId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -47,8 +43,8 @@ fun RecentBookmarks(bookmarks: List<BookmarkItem>) {
 
     SectionTitle(title = "Recently bookmarked")
     Spacer(modifier = Modifier.size(16.dp))
-    LazyColumn(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-        items(bookmarks, { it.id }) { bookmark ->
+    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        bookmarks.forEach { bookmark ->
             RecentBookmarkItem(
                 bookmark,
                 modifier = Modifier.pointerInput(Unit) {
