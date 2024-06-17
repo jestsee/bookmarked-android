@@ -38,10 +38,10 @@ fun HomeScreen(bookmarkedUiState: BookmarkedUiState) {
                 is BookmarkedUiState.Loading -> Text(text = "Loading...")
                 is BookmarkedUiState.Success -> {
                     Column(modifier = Modifier.fillMaxHeight()) {
-                        Spacer(modifier = Modifier.size(8.dp))
-                        BookmarkCarousel(bookmarkedUiState.bookmarkedList.items.takeLast(3))
                         Spacer(modifier = Modifier.size(12.dp))
-                        RecentBookmarks(bookmarkedUiState.bookmarkedList.items.take(3))
+                        BookmarkCarousel(bookmarkedUiState.bookmarkedList.items.takeLast(3))
+                        Spacer(modifier = Modifier.size(16.dp))
+                        RecentBookmarks(bookmarkedUiState.bookmarkedList.items.take(5))
                     }
                 }
 
