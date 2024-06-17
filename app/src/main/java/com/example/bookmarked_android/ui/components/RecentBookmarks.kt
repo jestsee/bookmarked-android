@@ -40,7 +40,6 @@ import com.example.bookmarked_android.model.BookmarkItem
 @Composable
 fun RecentBookmarks(bookmarks: List<BookmarkItem>, onNavigateToDetail: (String) -> Unit) {
     var pressedBookmarkId by rememberSaveable { mutableStateOf<String?>(null) }
-//    var pressedBookmarkId by rememberSaveable { mutableStateOf<String?>("f76142b5-e298-4691-895a-9628a1200e74") }
     val haptics = LocalHapticFeedback.current
 
     SectionTitle(title = "Recently bookmarked")
@@ -49,9 +48,9 @@ fun RecentBookmarks(bookmarks: List<BookmarkItem>, onNavigateToDetail: (String) 
         bookmarks.forEach { bookmark ->
             RecentBookmarkItem(
                 bookmark,
-                onClick = { onNavigateToDetail(bookmark.id) },
                 modifier = Modifier.pointerInput(Unit) {
                     detectTapGestures(
+                        onTap = { onNavigateToDetail(bookmark.id) },
                         onLongPress = {
                             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                             pressedBookmarkId = bookmark.id
@@ -59,7 +58,7 @@ fun RecentBookmarks(bookmarks: List<BookmarkItem>, onNavigateToDetail: (String) 
                         onPress = {
                             tryAwaitRelease()
                             pressedBookmarkId = null
-                        }
+                        },
                     )
                 }
             )
@@ -76,7 +75,7 @@ fun RecentBookmarks(bookmarks: List<BookmarkItem>, onNavigateToDetail: (String) 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecentBookmarkItem(item: BookmarkItem, modifier: Modifier, onClick: () -> Unit) {
+fun RecentBookmarkItem(item: BookmarkItem, modifier: Modifier) {
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -84,7 +83,6 @@ fun RecentBookmarkItem(item: BookmarkItem, modifier: Modifier, onClick: () -> Un
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0f),
         ),
-        onClick = onClick
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
