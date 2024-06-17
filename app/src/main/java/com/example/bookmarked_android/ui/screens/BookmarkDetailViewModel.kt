@@ -12,7 +12,7 @@ import com.example.bookmarked_android.network.NotionApi
 import kotlinx.coroutines.launch
 
 sealed interface BookmarkDetailUiState {
-    data class Success(val bookmarkedList: List<BookmarkDetail>) : BookmarkDetailUiState
+    data class Success(val details: List<BookmarkDetail>) : BookmarkDetailUiState
     object Error : BookmarkDetailUiState
     object Loading : BookmarkDetailUiState
 }
