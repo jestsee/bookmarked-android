@@ -3,6 +3,9 @@ package com.example.bookmarked_android.network
 import com.example.bookmarked_android.Config
 import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.BookmarkItem
+import com.example.bookmarked_android.model.Content
+import com.example.bookmarked_android.model.ContentTypeAdapter
+import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -17,15 +20,23 @@ private val baseUrl = Config().baseUrl
 private val interceptor = HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY)
 private val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
 
+// Custom deserializer adapter
+val customTypeAdapter = GsonBuilder().registerTypeAdapter(
+    Content::class.java,
+    ContentTypeAdapter()
+).create()
+val customGsonFactory: GsonConverterFactory = GsonConverterFactory.create(
+    customTypeAdapter
+)
+
 private val retrofit =
     Retrofit.Builder()
         .baseUrl(baseUrl)
-        .addConverterFactory(GsonConverterFactory.create())
+        .addConverterFactory(customGsonFactory)
         .client(client)
         .build()
 
 interface NotionApiService {
-
     @GET("bookmarks/{databaseId}")
     suspend fun getBookmarks(
         @Header("Authorization") token: String,
