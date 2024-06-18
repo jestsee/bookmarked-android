@@ -1,14 +1,15 @@
 package com.example.bookmarked_android.ui.screens
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,11 +24,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,7 +60,7 @@ class DetailScreenPreviewParameterProvider : PreviewParameterProvider<List<Bookm
     override val values = sequenceOf(mockBookmarkDetails)
 }
 
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 2000)
 @Composable
 fun DetailScreenPreview(
     @PreviewParameter(DetailScreenPreviewParameterProvider::class)
@@ -109,11 +118,9 @@ private fun Details(
 
 @Composable
 private fun DetailItem(detail: BookmarkDetail, isFirstItem: Boolean = false) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            detail.contents.map {
-                ContentItem(it, isFirstItem && it == detail.contents.first())
-            }
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        detail.contents.map {
+            ContentItem(it, isFirstItem && it == detail.contents.first())
         }
         AuthorCard(detail.author)
     }
@@ -124,7 +131,7 @@ private fun AuthorCard(author: Author) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp,Alignment.End),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
     ) {
         Divider(modifier = Modifier.weight(1f))
         Text(
@@ -132,10 +139,9 @@ private fun AuthorCard(author: Author) {
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
         )
-//        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = author.name,
-            fontSize = 16.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Medium
         )
         AsyncImage(
@@ -174,26 +180,43 @@ private fun ContentItem(content: Content, isFirstContentItem: Boolean) {
         AsyncImage(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(0.dp, 240.dp)
                 .clip(RoundedCornerShape(8)), // TODO
             model = content.url,
             contentDescription = "content image",
+            contentScale = ContentScale.Crop,
             placeholder = ASYNC_IMAGE_PLACEHOLDER
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.height(4.dp))
     }
     if (content is CalloutContent) {
         Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
+            modifier = Modifier.leftBorder(4.dp, Color(0xFF7A70FF)),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-//            Divider(
-//                modifier = Modifier
-//                    .fillMaxHeight()
-//                    .width(4.dp).padding(bottom = 16.dp),
-//                color = Color(0xFF8E85FF),
-//            )
             Spacer(modifier = Modifier.width(0.dp))
             DetailItem(detail = content.toBookmarkDetail())
         }
     }
 }
+
+@SuppressLint("ModifierFactoryUnreferencedReceiver")
+fun Modifier.leftBorder(strokeWidth: Dp, color: Color) = composed(
+    factory = {
+        val density = LocalDensity.current
+        val strokeWidthPx = density.run { strokeWidth.toPx() }
+
+        Modifier.drawBehind {
+            val height = size.height
+            val strokeWidthHalf = strokeWidthPx / 2
+
+            drawLine(
+                color = color,
+                start = Offset(x = strokeWidthHalf, y = 0.dp.toPx()),
+                end = Offset(x = strokeWidthHalf, y = height - 16.dp.toPx()),
+                strokeWidth = strokeWidthPx,
+                cap = StrokeCap.Round // This sets the tip to be rounded
+            )
+        }
+    }
+)
