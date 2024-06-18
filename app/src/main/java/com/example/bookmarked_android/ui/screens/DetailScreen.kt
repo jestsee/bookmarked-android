@@ -16,18 +16,40 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.bookmarked_android.mock.mockBookmarkDetails
 import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.Content
 import com.example.bookmarked_android.model.ImageContent
 import com.example.bookmarked_android.model.TextContent
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
 import com.example.bookmarked_android.ui.components.TextUrl
+import com.example.bookmarked_android.ui.theme.BookmarkedandroidTheme
 import com.example.bookmarked_android.ui.theme.PADDING
+
+class DetailScreenPreviewParameterProvider : PreviewParameterProvider<List<BookmarkDetail>> {
+    override val values = sequenceOf(mockBookmarkDetails)
+}
+
+@PreviewLightDark
+@Preview(showBackground = true)
+@Composable
+fun DetailScreenPreview(
+    @PreviewParameter(DetailScreenPreviewParameterProvider::class)
+    bookmarks: List<BookmarkDetail>
+) {
+    BookmarkedandroidTheme {
+        DetailScreenUi(BookmarkDetailUiState.Success(bookmarks))
+    }
+}
 
 @Composable
 fun DetailScreen(navController: NavController, pageId: String) {
@@ -35,6 +57,11 @@ fun DetailScreen(navController: NavController, pageId: String) {
         viewModel(factory = remember { BookmarkDetailViewModelFactory(pageId) })
     val bookmarkDetailUiState = viewModel.bookmarkDetailUiState
 
+    DetailScreenUi(bookmarkDetailUiState)
+}
+
+@Composable
+fun DetailScreenUi(bookmarkDetailUiState: BookmarkDetailUiState) {
     Scaffold(bottomBar = { BottomNavigationBar() }) { innerPadding ->
         when (bookmarkDetailUiState) {
             is BookmarkDetailUiState.Error -> Text(text = "Error")
@@ -71,15 +98,6 @@ private fun Details(
 @Composable
 private fun DetailItem(detail: BookmarkDetail, isFirstItem: Boolean) {
     Log.d("Detail", "DetailItem: ${detail}")
-//    if (isFirstItem) {
-//        Text(
-//            text = detail.contents[0].text,
-//            lineHeight = 36.sp,
-//            fontSize = 28.sp,
-//            fontWeight = FontWeight.SemiBold
-//        )
-//    }
-//
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         detail.contents.map {
             ContentItem(it, isFirstItem && it == detail.contents.first())
