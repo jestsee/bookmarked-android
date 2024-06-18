@@ -38,6 +38,10 @@ data class CalloutContent(
     val parentId: String,
 ) : Content()
 
+fun CalloutContent.toBookmarkDetail(): BookmarkDetail {
+    return BookmarkDetail(this.author, this.contents, this.id, "", this.parentId )
+}
+
 class ContentTypeAdapter : JsonDeserializer<Content> {
     override fun deserialize(
         json: JsonElement,

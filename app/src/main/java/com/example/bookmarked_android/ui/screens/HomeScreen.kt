@@ -55,7 +55,7 @@ fun HomeScreen(navController: NavController, viewModel: BookmarkListViewModel = 
                         val onNavigateToDetail =
                             { id: String -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id") }
                         RecentBookmarks(
-                            bookmarkedUiState.bookmarkList.items.take(5),
+                            bookmarkedUiState.bookmarkList.items.take(25),
                             onNavigateToDetail
                         )
                     }
