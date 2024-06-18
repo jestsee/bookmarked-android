@@ -8,10 +8,11 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun TextUrl(modifier: Modifier = Modifier, text: String, url: String) {
+fun TextUrl(modifier: Modifier = Modifier, text: String, url: String, fontSize: TextUnit = 18.sp) {
     val uriHandler = LocalUriHandler.current
     val annotatedText = buildAnnotatedString {
         pushStringAnnotation(tag = "URL", annotation = url)
@@ -19,7 +20,7 @@ fun TextUrl(modifier: Modifier = Modifier, text: String, url: String) {
         withStyle(
             style = SpanStyle(
                 color = Color(0xFF8E85FF),
-                fontSize = 18.sp
+                fontSize = fontSize
             )
         ) { append(text) }
         pop()
