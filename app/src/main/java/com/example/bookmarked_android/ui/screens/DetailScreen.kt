@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -111,12 +109,14 @@ private fun Details(
 
 @Composable
 private fun DetailItem(detail: BookmarkDetail, isFirstItem: Boolean = false) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        detail.contents.map {
-            ContentItem(it, isFirstItem && it == detail.contents.first())
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            detail.contents.map {
+                ContentItem(it, isFirstItem && it == detail.contents.first())
+            }
         }
+        AuthorCard(detail.author)
     }
-    AuthorCard(detail.author)
 }
 
 @Composable
@@ -124,20 +124,20 @@ private fun AuthorCard(author: Author) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.End,
+        horizontalArrangement = Arrangement.spacedBy(8.dp,Alignment.End),
     ) {
+        Divider(modifier = Modifier.weight(1f))
         Text(
             text = author.username,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
         )
-        Spacer(modifier = Modifier.width(12.dp))
+//        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = author.name,
             fontSize = 16.sp,
             fontWeight = FontWeight.Medium
         )
-        Spacer(modifier = Modifier.width(8.dp))
         AsyncImage(
             modifier = Modifier
                 .size(32.dp)
@@ -174,8 +174,7 @@ private fun ContentItem(content: Content, isFirstContentItem: Boolean) {
         AsyncImage(
             modifier = Modifier
                 .fillMaxWidth()
-//                .height(160.dp)
-                .clip(RoundedCornerShape(2)), // TODO
+                .clip(RoundedCornerShape(8)), // TODO
             model = content.url,
             contentDescription = "content image",
             placeholder = ASYNC_IMAGE_PLACEHOLDER
@@ -185,16 +184,15 @@ private fun ContentItem(content: Content, isFirstContentItem: Boolean) {
     if (content is CalloutContent) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),
-            horizontalArrangement = Arrangement.spacedBy(18.dp)
+            horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Divider(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(4.dp),
-                color = Color(
-                    0xFF8E85FF
-                ),
-            )
+//            Divider(
+//                modifier = Modifier
+//                    .fillMaxHeight()
+//                    .width(4.dp).padding(bottom = 16.dp),
+//                color = Color(0xFF8E85FF),
+//            )
+            Spacer(modifier = Modifier.width(0.dp))
             DetailItem(detail = content.toBookmarkDetail())
         }
     }
