@@ -2,15 +2,12 @@ package com.example.bookmarked_android.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -38,21 +35,16 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -65,6 +57,7 @@ import com.example.bookmarked_android.model.ImageContent
 import com.example.bookmarked_android.model.TextContent
 import com.example.bookmarked_android.model.toBookmarkDetail
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
+import com.example.bookmarked_android.ui.components.ImageDialog
 import com.example.bookmarked_android.ui.components.TextUrl
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.BookmarkedandroidTheme
@@ -137,59 +130,6 @@ private fun Details(
 
     if (selectedImageUrl != null) {
         ImageDialog(url = selectedImageUrl!!, onDismissRequest = { selectedImageUrl = null })
-    }
-
-}
-
-@Composable
-private fun ImageDialog(url: String, onDismissRequest: () -> Unit) {
-    var scale by remember { mutableStateOf(1f) }
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
-    var imageSize by remember { mutableStateOf(IntSize.Zero) }
-
-    val minScale = 1f
-    val maxScale = 3f
-
-    Dialog(
-        onDismissRequest = onDismissRequest,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
-    ) {
-        AsyncImage(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black)
-                .onGloballyPositioned { coordinates ->
-                    imageSize = coordinates.size
-                }
-                .graphicsLayer(
-                    scaleX = maxOf(minScale, minOf(maxScale, scale)),
-                    scaleY = maxOf(minScale, minOf(maxScale, scale)),
-                    translationX = offsetX,
-                    translationY = offsetY
-                )
-                .pointerInput(Unit) {
-                    detectTransformGestures { _, pan, zoom, _ ->
-                        scale = (scale * zoom).coerceIn(minScale, maxScale)
-
-                        if (scale > 1) {
-                            val maxX = (imageSize.width * (scale - 1)) / 2
-                            val maxY = (imageSize.height * (scale - 1)) / 2
-
-                            offsetX = (offsetX + pan.x * scale).coerceIn(-maxX, maxX)
-                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
-                            return@detectTransformGestures
-                        }
-                        offsetX = 0f
-                        offsetY = 0f
-                    }
-                },
-            model = url,
-            contentDescription = "Content image",
-            contentScale = ContentScale.FillWidth,
-            placeholder = ASYNC_IMAGE_PLACEHOLDER
-        )
-
     }
 
 }
