@@ -2,11 +2,15 @@ package com.example.bookmarked_android.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -14,14 +18,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -30,15 +38,21 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -60,11 +74,10 @@ class DetailScreenPreviewParameterProvider : PreviewParameterProvider<List<Bookm
     override val values = sequenceOf(mockBookmarkDetails)
 }
 
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 2000)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DetailScreenPreview(
-    @PreviewParameter(DetailScreenPreviewParameterProvider::class)
-    bookmarks: List<BookmarkDetail>
+    @PreviewParameter(DetailScreenPreviewParameterProvider::class) bookmarks: List<BookmarkDetail>
 ) {
     BookmarkedandroidTheme {
         DetailScreenUi(BookmarkDetailUiState.Success(bookmarks))
@@ -87,7 +100,7 @@ fun DetailScreenUi(bookmarkDetailUiState: BookmarkDetailUiState) {
             is BookmarkDetailUiState.Error -> Text(text = "Error")
             is BookmarkDetailUiState.Loading -> Text(text = "Loading...")
             is BookmarkDetailUiState.Success -> {
-                Details(innerPadding, bookmarkDetailUiState)
+                Details(innerPadding, bookmarkDetailUiState.details)
             }
         }
     }
@@ -95,8 +108,10 @@ fun DetailScreenUi(bookmarkDetailUiState: BookmarkDetailUiState) {
 
 @Composable
 private fun Details(
-    innerPadding: PaddingValues, bookmarkDetailUiState: BookmarkDetailUiState.Success
+    innerPadding: PaddingValues, details: List<BookmarkDetail>
 ) {
+    var selectedImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
+
     LazyColumn(
         modifier = Modifier.padding(
             PADDING,
@@ -107,22 +122,90 @@ private fun Details(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item { Spacer(modifier = Modifier.height(24.dp)) }
-        items(bookmarkDetailUiState.details) {
-            DetailItem(it, it == bookmarkDetailUiState.details.first())
+        itemsIndexed(details) { _, item ->
+            DetailItem(
+                item,
+                // TODO prevent to show author if redundant
+                item == details.first(),
+                onImageClick = { imageUrl -> selectedImageUrl = imageUrl }
+            )
         }
         // See in Notion
         // See in twitter
         // Bookmarked at
     }
+
+    if (selectedImageUrl != null) {
+        ImageDialog(url = selectedImageUrl!!, onDismissRequest = { selectedImageUrl = null })
+    }
+
 }
 
 @Composable
-private fun DetailItem(detail: BookmarkDetail, isFirstItem: Boolean = false) {
+private fun ImageDialog(url: String, onDismissRequest: () -> Unit) {
+    var scale by remember { mutableStateOf(1f) }
+    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableStateOf(0f) }
+    var imageSize by remember { mutableStateOf(IntSize.Zero) }
+
+    val minScale = 1f
+    val maxScale = 3f
+
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        AsyncImage(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .onGloballyPositioned { coordinates ->
+                    imageSize = coordinates.size
+                }
+                .graphicsLayer(
+                    scaleX = maxOf(minScale, minOf(maxScale, scale)),
+                    scaleY = maxOf(minScale, minOf(maxScale, scale)),
+                    translationX = offsetX,
+                    translationY = offsetY
+                )
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        scale = (scale * zoom).coerceIn(minScale, maxScale)
+
+                        if (scale > 1) {
+                            val maxX = (imageSize.width * (scale - 1)) / 2
+                            val maxY = (imageSize.height * (scale - 1)) / 2
+
+                            offsetX = (offsetX + pan.x * scale).coerceIn(-maxX, maxX)
+                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
+                            return@detectTransformGestures
+                        }
+                        offsetX = 0f
+                        offsetY = 0f
+                    }
+                },
+            model = url,
+            contentDescription = "Content image",
+            contentScale = ContentScale.FillWidth,
+            placeholder = ASYNC_IMAGE_PLACEHOLDER
+        )
+
+    }
+
+}
+
+@Composable
+private fun DetailItem(
+    detail: BookmarkDetail,
+    isFirstItem: Boolean = false,
+    shouldDisplayAuthor: Boolean = true,
+    onImageClick: (String) -> Unit
+) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         detail.contents.map {
-            ContentItem(it, isFirstItem && it == detail.contents.first())
+            ContentItem(it, isFirstItem && it == detail.contents.first(), onImageClick)
         }
-        AuthorCard(detail.author)
+        if (shouldDisplayAuthor) AuthorCard(detail.author)
     }
 }
 
@@ -140,9 +223,7 @@ private fun AuthorCard(author: Author) {
             color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
         )
         Text(
-            text = author.name,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
+            text = author.name, fontSize = 14.sp, fontWeight = FontWeight.Medium
         )
         AsyncImage(
             modifier = Modifier
@@ -156,7 +237,11 @@ private fun AuthorCard(author: Author) {
 }
 
 @Composable
-private fun ContentItem(content: Content, isFirstContentItem: Boolean) {
+private fun ContentItem(
+    content: Content,
+    isFirstContentItem: Boolean,
+    onImageClick: (String) -> Unit
+) {
     if (isFirstContentItem && content is TextContent) {
         return Text(
             text = content.text,
@@ -167,13 +252,10 @@ private fun ContentItem(content: Content, isFirstContentItem: Boolean) {
     }
     if (content is TextContent) {
         if (content.url != null) return TextUrl(
-            text = content.text,
-            url = content.url
+            text = content.text, url = content.url
         )
         return Text(
-            text = content.text,
-            fontSize = 18.sp,
-            lineHeight = 28.sp
+            text = content.text, fontSize = 18.sp, lineHeight = 28.sp
         )
     }
     if (content is ImageContent) {
@@ -181,11 +263,14 @@ private fun ContentItem(content: Content, isFirstContentItem: Boolean) {
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(0.dp, 240.dp)
-                .clip(RoundedCornerShape(8)), // TODO
+                .clip(RoundedCornerShape(8))
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = { onImageClick(content.url) })
+                },
             model = content.url,
             contentDescription = "content image",
             contentScale = ContentScale.Crop,
-            placeholder = ASYNC_IMAGE_PLACEHOLDER
+            placeholder = ASYNC_IMAGE_PLACEHOLDER,
         )
         Spacer(modifier = Modifier.height(4.dp))
     }
@@ -195,28 +280,26 @@ private fun ContentItem(content: Content, isFirstContentItem: Boolean) {
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Spacer(modifier = Modifier.width(0.dp))
-            DetailItem(detail = content.toBookmarkDetail())
+            DetailItem(detail = content.toBookmarkDetail(), onImageClick = onImageClick)
         }
     }
 }
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
-fun Modifier.leftBorder(strokeWidth: Dp, color: Color) = composed(
-    factory = {
-        val density = LocalDensity.current
-        val strokeWidthPx = density.run { strokeWidth.toPx() }
+fun Modifier.leftBorder(strokeWidth: Dp, color: Color) = composed(factory = {
+    val density = LocalDensity.current
+    val strokeWidthPx = density.run { strokeWidth.toPx() }
 
-        Modifier.drawBehind {
-            val height = size.height
-            val strokeWidthHalf = strokeWidthPx / 2
+    Modifier.drawBehind {
+        val height = size.height
+        val strokeWidthHalf = strokeWidthPx / 2
 
-            drawLine(
-                color = color,
-                start = Offset(x = strokeWidthHalf, y = 0.dp.toPx()),
-                end = Offset(x = strokeWidthHalf, y = height - 16.dp.toPx()),
-                strokeWidth = strokeWidthPx,
-                cap = StrokeCap.Round // This sets the tip to be rounded
-            )
-        }
+        drawLine(
+            color = color,
+            start = Offset(x = strokeWidthHalf, y = 0.dp.toPx()),
+            end = Offset(x = strokeWidthHalf, y = height - 16.dp.toPx()),
+            strokeWidth = strokeWidthPx,
+            cap = StrokeCap.Round // This sets the tip to be rounded
+        )
     }
-)
+})
