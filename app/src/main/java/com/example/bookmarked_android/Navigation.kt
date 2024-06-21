@@ -2,7 +2,16 @@ package com.example.bookmarked_android
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,9 +24,9 @@ enum class Screen {
 }
 
 sealed class NavigationItem(val route: String) {
-    object Home : NavigationItem(Screen.HOME.name)
-    object BookmarkList : NavigationItem(Screen.BOOKMARK_LIST.name)
-    object BookmarkDetail : NavigationItem(Screen.BOOKMARK_DETAIL.name + "/{bookmarkId}")
+    data object Home : NavigationItem(Screen.HOME.name)
+    data object BookmarkList : NavigationItem(Screen.BOOKMARK_LIST.name)
+    data object BookmarkDetail : NavigationItem(Screen.BOOKMARK_DETAIL.name + "/{bookmarkId}")
 }
 
 @Composable
@@ -26,7 +35,30 @@ fun NavigationHost(
     navController: NavHostController,
     startDestination: String = NavigationItem.Home.route
 ) {
-    Scaffold(bottomBar = { BottomNavigationBar() }) { innerPadding ->
+    val bottomBarHeight = 116.dp
+    val bottomBarHeightPx = with(LocalDensity.current) { bottomBarHeight.roundToPx().toFloat() }
+    val bottomBarOffsetHeightPx = remember { mutableFloatStateOf(0f) }
+    val showBottomBar = remember { mutableStateOf(true) }
+
+// connection to the nested scroll system and listen to the scroll
+// happening inside child LazyColumn
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+
+                val delta = available.y
+                val newOffset = bottomBarOffsetHeightPx.floatValue + delta
+                bottomBarOffsetHeightPx.floatValue = newOffset.coerceIn(-bottomBarHeightPx, 0f)
+                showBottomBar.value = newOffset >= 0f
+
+                return Offset.Zero
+            }
+        }
+    }
+
+    Scaffold(
+        Modifier.nestedScroll(nestedScrollConnection),
+        bottomBar = { BottomNavigationBar(visible = showBottomBar.value) }) { innerPadding ->
         NavHost(
             modifier = modifier, navController = navController, startDestination = startDestination
         ) {
