@@ -35,7 +35,7 @@ fun HomeScreen(navController: NavController, viewModel: BookmarkListViewModel = 
 
         Column(
             modifier = Modifier
-                .padding(0.dp, 48.dp, 0.dp, innerPadding.calculateBottomPadding())
+                .padding(0.dp, 48.dp, 0.dp, 0.dp)
                 .verticalScroll(
                     rememberScrollState()
                 ),
@@ -55,14 +55,14 @@ fun HomeScreen(navController: NavController, viewModel: BookmarkListViewModel = 
                         val onNavigateToDetail =
                             { id: String -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id") }
                         RecentBookmarks(
-                            bookmarkedUiState.bookmarkList.items.take(25),
-                            onNavigateToDetail
+                            bookmarkedUiState.bookmarkList.items.take(5),
+                            onNavigateToDetail,
+                            innerPadding.calculateBottomPadding(),
                         )
                     }
                 }
 
             }
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
