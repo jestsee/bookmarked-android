@@ -32,7 +32,7 @@ fun ImageDialog(
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
 
     val minScale = 1f
-    val maxScale = 4f
+    val maxScale = 3f
 
     Dialog(
         onDismissRequest = onDismissRequest,
@@ -47,7 +47,7 @@ fun ImageDialog(
                     scaleX = maxOf(minScale, minOf(maxScale, scale)),
                     scaleY = maxOf(minScale, minOf(maxScale, scale)),
                     translationX = offsetX,
-//                        translationY = offsetY
+                    translationY = offsetY
                 )
                 .pointerInput(Unit) {
                     detectTransformGestures { _, pan, zoom, _ ->
@@ -58,7 +58,7 @@ fun ImageDialog(
                             val maxY = (imageSize.height * (scale - 1)) / 2
 
                             offsetX = (offsetX + pan.x * scale).coerceIn(-maxX, maxX)
-                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
+//                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
                             return@detectTransformGestures
                         }
                         offsetX = 0f
