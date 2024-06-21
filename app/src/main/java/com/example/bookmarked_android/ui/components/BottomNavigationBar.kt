@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BookmarkAdd
@@ -35,15 +34,14 @@ fun BottomNavigationBar() {
 
     BottomAppBar(
         modifier = Modifier
-            .wrapContentWidth()
-            .padding(vertical = 20.dp, horizontal = 40.dp)
+            .padding(vertical = 18.dp, horizontal = 48.dp)
             .border(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.onBackground.copy(0.08f),
                 shape = RoundedCornerShape(50)
             )
             .clip(RoundedCornerShape(50)),
-        contentPadding = PaddingValues(0.dp),
+        contentPadding = PaddingValues(4.dp),
         tonalElevation = 0.1.dp,
         windowInsets = WindowInsets(0)
     ) {
