@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -56,7 +55,6 @@ import com.example.bookmarked_android.model.Content
 import com.example.bookmarked_android.model.ImageContent
 import com.example.bookmarked_android.model.TextContent
 import com.example.bookmarked_android.model.toBookmarkDetail
-import com.example.bookmarked_android.ui.components.BottomNavigationBar
 import com.example.bookmarked_android.ui.components.ImageDialog
 import com.example.bookmarked_android.ui.components.TextUrl
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
@@ -73,47 +71,53 @@ fun DetailScreenPreview(
     @PreviewParameter(DetailScreenPreviewParameterProvider::class) bookmarks: List<BookmarkDetail>
 ) {
     BookmarkedandroidTheme {
-        DetailScreenUi(BookmarkDetailUiState.Success(bookmarks))
+        DetailScreenUi(BookmarkDetailUiState.Success(bookmarks), 0.dp, 0.dp)
     }
 }
 
 @Composable
-fun DetailScreen(navController: NavController, pageId: String) {
+fun DetailScreen(navController: NavController, pageId: String, topPadding: Dp, bottomPadding: Dp) {
     val viewModel: BookmarkDetailViewModel =
         viewModel(factory = remember { BookmarkDetailViewModelFactory(pageId) })
     val bookmarkDetailUiState = viewModel.bookmarkDetailUiState
 
-    DetailScreenUi(bookmarkDetailUiState)
+    DetailScreenUi(bookmarkDetailUiState, topPadding, bottomPadding)
 }
 
 @Composable
-fun DetailScreenUi(bookmarkDetailUiState: BookmarkDetailUiState) {
-    Scaffold(bottomBar = { BottomNavigationBar() }) { innerPadding ->
-        when (bookmarkDetailUiState) {
-            is BookmarkDetailUiState.Error -> Text(text = "Error")
-            is BookmarkDetailUiState.Loading -> Text(text = "Loading...")
-            is BookmarkDetailUiState.Success -> {
-                Details(innerPadding, bookmarkDetailUiState.details)
-            }
+fun DetailScreenUi(
+    bookmarkDetailUiState: BookmarkDetailUiState,
+    topPadding: Dp,
+    bottomPadding: Dp
+) {
+    when (bookmarkDetailUiState) {
+        is BookmarkDetailUiState.Error -> Text(text = "Error")
+        is BookmarkDetailUiState.Loading -> Text(text = "Loading...")
+        is BookmarkDetailUiState.Success -> {
+            Details(bookmarkDetailUiState.details, topPadding, bottomPadding)
         }
     }
 }
 
+
 @Composable
 private fun Details(
-    innerPadding: PaddingValues, details: List<BookmarkDetail>
+    details: List<BookmarkDetail>, topPadding: Dp, bottomPadding: Dp,
 ) {
     var selectedImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
     LazyColumn(
         modifier = Modifier.padding(
             PADDING,
-            innerPadding.calculateTopPadding(),
+            topPadding,
             PADDING,
+        ),
+        contentPadding = PaddingValues(
+            top = 24.dp,
+            bottom = bottomPadding
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        item { Spacer(modifier = Modifier.height(24.dp)) }
         itemsIndexed(details) { _, item ->
             DetailItem(
                 item,
@@ -121,9 +125,6 @@ private fun Details(
                 item == details.first(),
                 onImageClick = { imageUrl -> selectedImageUrl = imageUrl }
             )
-        }
-        item {
-            Spacer(modifier = Modifier.height(innerPadding.calculateBottomPadding() - 16.dp))
         }
         // See in Notion
         // See in twitter

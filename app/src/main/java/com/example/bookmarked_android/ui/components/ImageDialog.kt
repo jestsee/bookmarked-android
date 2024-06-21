@@ -2,7 +2,6 @@ package com.example.bookmarked_android.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,46 +32,45 @@ fun ImageDialog(
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
 
     val minScale = 1f
-    val maxScale = 3f
+    val maxScale = 4f
 
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        Box {
-            AsyncImage(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black)
-                    .onSizeChanged { imageSize = it }
-                    .graphicsLayer(
-                        scaleX = maxOf(minScale, minOf(maxScale, scale)),
-                        scaleY = maxOf(minScale, minOf(maxScale, scale)),
-                        translationX = offsetX,
+        AsyncImage(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .onSizeChanged { imageSize = it }
+                .graphicsLayer(
+                    scaleX = maxOf(minScale, minOf(maxScale, scale)),
+                    scaleY = maxOf(minScale, minOf(maxScale, scale)),
+                    translationX = offsetX,
 //                        translationY = offsetY
-                    )
-                    .pointerInput(Unit) {
-                        detectTransformGestures { _, pan, zoom, _ ->
-                            scale = (scale * zoom).coerceIn(minScale, maxScale)
+                )
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        scale = (scale * zoom).coerceIn(minScale, maxScale)
 
-                            if (scale > 1) {
-                                val maxX = (imageSize.width * (scale - 1)) / 2
-                                val maxY = (imageSize.height * (scale - 1)) / 2
+                        if (scale > 1) {
+                            val maxX = (imageSize.width * (scale - 1)) / 2
+                            val maxY = (imageSize.height * (scale - 1)) / 2
 
-                                offsetX = (offsetX + pan.x * scale).coerceIn(-maxX, maxX)
-                                offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
-                                return@detectTransformGestures
-                            }
-                            offsetX = 0f
-                            offsetY = 0f
+                            offsetX = (offsetX + pan.x * scale).coerceIn(-maxX, maxX)
+                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
+                            return@detectTransformGestures
                         }
-                    },
-                model = url,
-                contentDescription = "Content image",
-                contentScale = ContentScale.FillWidth,
-                placeholder = ASYNC_IMAGE_PLACEHOLDER
-            )
-        }
+                        offsetX = 0f
+                        offsetY = 0f
+                    }
+                },
+            model = url,
+            contentDescription = "Content image",
+            contentScale = ContentScale.FillWidth,
+            placeholder = ASYNC_IMAGE_PLACEHOLDER
+        )
+
 
     }
 

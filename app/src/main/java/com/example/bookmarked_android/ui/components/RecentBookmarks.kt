@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -33,7 +32,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.model.BookmarkItem
@@ -42,7 +40,6 @@ import com.example.bookmarked_android.model.BookmarkItem
 fun RecentBookmarks(
     bookmarks: List<BookmarkItem>,
     onNavigateToDetail: (String) -> Unit,
-    bottomPadding: Dp
 ) {
     var pressedBookmarkId by rememberSaveable { mutableStateOf<String?>(null) }
     val haptics = LocalHapticFeedback.current
@@ -50,7 +47,6 @@ fun RecentBookmarks(
     SectionTitle(title = "Recently bookmarked")
     Spacer(modifier = Modifier.size(16.dp))
     Column(
-        modifier = Modifier.padding(bottom = bottomPadding),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         bookmarks.forEach { bookmark ->
@@ -81,7 +77,6 @@ fun RecentBookmarks(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecentBookmarkItem(item: BookmarkItem, modifier: Modifier) {
     Card(
