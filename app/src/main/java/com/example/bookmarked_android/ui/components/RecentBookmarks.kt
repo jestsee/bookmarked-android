@@ -33,18 +33,26 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.model.BookmarkItem
 
 @Composable
-fun RecentBookmarks(bookmarks: List<BookmarkItem>, onNavigateToDetail: (String) -> Unit) {
+fun RecentBookmarks(
+    bookmarks: List<BookmarkItem>,
+    onNavigateToDetail: (String) -> Unit,
+    bottomPadding: Dp
+) {
     var pressedBookmarkId by rememberSaveable { mutableStateOf<String?>(null) }
     val haptics = LocalHapticFeedback.current
 
     SectionTitle(title = "Recently bookmarked")
     Spacer(modifier = Modifier.size(16.dp))
-    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+    Column(
+        modifier = Modifier.padding(bottom = bottomPadding),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
         bookmarks.forEach { bookmark ->
             RecentBookmarkItem(
                 bookmark,

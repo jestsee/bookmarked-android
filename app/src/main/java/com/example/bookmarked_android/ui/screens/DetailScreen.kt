@@ -110,7 +110,6 @@ private fun Details(
             PADDING,
             innerPadding.calculateTopPadding(),
             PADDING,
-            innerPadding.calculateBottomPadding()
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -122,6 +121,9 @@ private fun Details(
                 item == details.first(),
                 onImageClick = { imageUrl -> selectedImageUrl = imageUrl }
             )
+        }
+        item {
+            Spacer(modifier = Modifier.height(innerPadding.calculateBottomPadding() - 16.dp))
         }
         // See in Notion
         // See in twitter
@@ -236,10 +238,16 @@ fun Modifier.leftBorder(strokeWidth: Dp, color: Color) = composed(factory = {
 
         drawLine(
             color = color,
-            start = Offset(x = strokeWidthHalf, y = 0.dp.toPx()),
+            start = Offset(x = strokeWidthHalf, y = 24.dp.toPx()),
             end = Offset(x = strokeWidthHalf, y = height - 16.dp.toPx()),
             strokeWidth = strokeWidthPx,
             cap = StrokeCap.Round // This sets the tip to be rounded
+        )
+
+        drawCircle(
+            color = color,
+            radius = strokeWidthPx * 1.25f,
+            center = Offset(x = strokeWidthHalf, y = 12.dp.toPx())
         )
     }
 })
