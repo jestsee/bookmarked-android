@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.model.BookmarkItem
+import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
 @Composable
 fun RecentBookmarks(
@@ -47,7 +48,8 @@ fun RecentBookmarks(
     SectionTitle(title = "Recently bookmarked")
     Spacer(modifier = Modifier.size(16.dp))
     Column(
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         bookmarks.forEach { bookmark ->
             RecentBookmarkItem(
@@ -80,9 +82,7 @@ fun RecentBookmarks(
 @Composable
 fun RecentBookmarkItem(item: BookmarkItem, modifier: Modifier) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp),
+        modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0f),
         ),

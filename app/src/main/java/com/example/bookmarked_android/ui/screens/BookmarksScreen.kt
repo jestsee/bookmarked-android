@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.Screen
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
+import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
 @Composable
 fun BookmarksScreen(
@@ -31,7 +32,7 @@ fun BookmarksScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(0.dp, topPadding, 0.dp, bottomPadding)
+                contentPadding = PaddingValues(HORIZONTAL_PADDING, topPadding, HORIZONTAL_PADDING, bottomPadding)
             ) {
 
                 items(bookmarkedUiState.bookmarkList.items) { item ->

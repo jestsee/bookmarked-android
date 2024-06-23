@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.model.BookmarkItem
+import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
 @Composable
 fun BookmarkCarousel(items: List<BookmarkItem>) {
@@ -34,7 +35,7 @@ fun BookmarkCarousel(items: List<BookmarkItem>) {
         Modifier
             .horizontalScroll(rememberScrollState())
             .height(intrinsicSize = IntrinsicSize.Min)
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = HORIZONTAL_PADDING),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
         items.forEach { item ->

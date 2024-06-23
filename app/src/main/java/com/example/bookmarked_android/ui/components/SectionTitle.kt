@@ -13,8 +13,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
 class SectionTitleProvider : PreviewParameterProvider<String> {
     override val values = sequenceOf("Section Title")
@@ -31,7 +31,7 @@ fun SectionTitle(title: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = HORIZONTAL_PADDING),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
