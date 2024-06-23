@@ -59,8 +59,11 @@ import com.example.bookmarked_android.ui.components.ImageDialog
 import com.example.bookmarked_android.ui.components.TextUrl
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.BookmarkedandroidTheme
-import com.example.bookmarked_android.ui.theme.PADDING
+import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
+/**
+ * Preview
+ */
 class DetailScreenPreviewParameterProvider : PreviewParameterProvider<List<BookmarkDetail>> {
     override val values = sequenceOf(mockBookmarkDetails)
 }
@@ -75,6 +78,9 @@ fun DetailScreenPreview(
     }
 }
 
+/**
+ * Implementation
+ */
 @Composable
 fun DetailScreen(navController: NavController, pageId: String, topPadding: Dp, bottomPadding: Dp) {
     val viewModel: BookmarkDetailViewModel =
@@ -108,12 +114,12 @@ private fun Details(
 
     LazyColumn(
         modifier = Modifier.padding(
-            PADDING,
+            HORIZONTAL_PADDING,
             topPadding,
-            PADDING,
+            HORIZONTAL_PADDING,
         ),
         contentPadding = PaddingValues(
-            top = 24.dp,
+            top = 32.dp,
             bottom = bottomPadding
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp),

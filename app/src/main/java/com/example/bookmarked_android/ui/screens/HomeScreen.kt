@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.Screen
-import com.example.bookmarked_android.ui.components.BookmarkCarousel
 import com.example.bookmarked_android.ui.components.RecentBookmarks
+import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
 @Composable
 fun HomeScreen(
@@ -43,15 +43,14 @@ fun HomeScreen(
     ) {
         Spacer(modifier = Modifier.height(8.dp))
         GreetingsText()
-//            TODO: search bar
         when (bookmarkedUiState) {
             is BookmarkListUiState.Error -> Text(text = "Error")
             is BookmarkListUiState.Loading -> Text(text = "Loading...")
             is BookmarkListUiState.Success -> {
                 Column(modifier = Modifier.fillMaxHeight()) {
                     Spacer(modifier = Modifier.size(12.dp))
-                    BookmarkCarousel(bookmarkedUiState.bookmarkList.items.takeLast(3))
-                    Spacer(modifier = Modifier.size(16.dp))
+//                    BookmarkCarousel(bookmarkedUiState.bookmarkList.items.takeLast(3))
+//                    Spacer(modifier = Modifier.size(16.dp))
 
                     val onNavigateToDetail =
                         { id: String -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id") }
@@ -69,7 +68,7 @@ fun HomeScreen(
 @Composable
 fun GreetingsText() {
     Row(horizontalArrangement = Arrangement.SpaceBetween) {
-        Column(Modifier.padding(horizontal = 12.dp)) {
+        Column(Modifier.padding(horizontal = HORIZONTAL_PADDING)) {
             Text(
                 text = "Welcome back,",
                 color = MaterialTheme.colorScheme.onBackground.copy(0.9f)

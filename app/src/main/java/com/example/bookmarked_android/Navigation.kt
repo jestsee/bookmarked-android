@@ -24,6 +24,7 @@ import com.example.bookmarked_android.ui.screens.BookmarkListViewModel
 import com.example.bookmarked_android.ui.screens.BookmarksScreen
 import com.example.bookmarked_android.ui.screens.DetailScreen
 import com.example.bookmarked_android.ui.screens.HomeScreen
+import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 
 enum class Screen {
     HOME, BOOKMARK_LIST, BOOKMARK_DETAIL,
@@ -57,7 +58,6 @@ fun NavigationHost(
                 bottomBarOffsetHeightPx.floatValue = newOffset.coerceIn(-bottomBarHeightPx, 0f)
                 showBottomBar.value = newOffset / 2 >= 0f
 
-
                 return Offset.Zero
             }
         }
@@ -82,7 +82,7 @@ fun NavigationHost(
                 HomeScreen(
                     navController = navController,
                     topPadding = innerPadding.calculateTopPadding(),
-                    bottomPadding = innerPadding.calculateBottomPadding(),
+                    bottomPadding = BOTTOM_PADDING,
                     viewModel = bookmarkListViewModel,
                 )
             }
@@ -90,16 +90,16 @@ fun NavigationHost(
                 BookmarksScreen(
                     navController = navController,
                     topPadding = innerPadding.calculateTopPadding(),
-                    bottomPadding = innerPadding.calculateBottomPadding(),
+                    bottomPadding = BOTTOM_PADDING,
                     viewModel = bookmarkListViewModel
                 )
             }
             composable(NavigationItem.BookmarkDetail.route) { backStackEntry ->
                 val bookmarkId = backStackEntry.arguments?.getString("bookmarkId")
                 DetailScreen(
-                    topPadding = innerPadding.calculateTopPadding(),
-                    bottomPadding = innerPadding.calculateBottomPadding(),
                     navController = navController,
+                    topPadding = innerPadding.calculateTopPadding(),
+                    bottomPadding = BOTTOM_PADDING,
                     pageId = bookmarkId!!
                 )
             }
