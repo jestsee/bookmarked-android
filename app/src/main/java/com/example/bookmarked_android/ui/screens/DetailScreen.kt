@@ -194,18 +194,16 @@ private fun ContentItem(
     if (isFirstContentItem && content is TextContent) {
         return Text(
             text = content.text,
-            fontSize = 32.sp,
+            fontSize = 28.sp,
             fontWeight = FontWeight.SemiBold,
-            lineHeight = 36.sp
+            lineHeight = 32.sp
         )
     }
     if (content is TextContent) {
         if (content.url != null) return TextUrl(
             text = content.text, url = content.url
         )
-        return Text(
-            text = content.text, fontSize = 18.sp, lineHeight = 28.sp
-        )
+        return Text(text = content.text)
     }
     if (content is ImageContent) {
         AsyncImage(

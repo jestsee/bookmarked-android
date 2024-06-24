@@ -5,20 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.Screen
@@ -48,7 +44,7 @@ fun HomeScreen(
             is BookmarkListUiState.Loading -> Text(text = "Loading...")
             is BookmarkListUiState.Success -> {
                 Column(modifier = Modifier.fillMaxHeight()) {
-                    Spacer(modifier = Modifier.size(12.dp))
+//                    Spacer(modifier = Modifier.size(12.dp))
 //                    BookmarkCarousel(bookmarkedUiState.bookmarkList.items.takeLast(3))
 //                    Spacer(modifier = Modifier.size(16.dp))
 
@@ -71,14 +67,11 @@ fun GreetingsText() {
         Column(Modifier.padding(horizontal = HORIZONTAL_PADDING)) {
             Text(
                 text = "Welcome back,",
-                color = MaterialTheme.colorScheme.onBackground.copy(0.9f)
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
             )
-            Spacer(
-                modifier = Modifier
-                    .height(2.dp)
-                    .fillMaxWidth()
-            )
-            Text(text = "Olivia Ong!", fontSize = 40.sp, fontWeight = FontWeight.Medium)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(text = "Name here", style = MaterialTheme.typography.displaySmall)
         }
     }
 }
