@@ -87,5 +87,8 @@ fun BookmarkTags(tags: List<Tag>) {
 
 @Composable
 fun BookmarkTag(tag: Tag) {
-    AssistChip(onClick = { /*TODO*/ }, label = { Text(text = tag.name) })
+    AssistChip(
+        modifier = Modifier.padding(0.dp),
+        onClick = { /*TODO*/ },
+        label = { Text(text = tag.name, fontSize = 12.sp) })
 }
