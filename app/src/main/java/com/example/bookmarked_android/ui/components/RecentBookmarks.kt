@@ -27,9 +27,11 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.R
+import com.example.bookmarked_android.maxCharacters
 import com.example.bookmarked_android.model.BookmarkItem
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
@@ -90,25 +92,26 @@ fun RecentBookmarkItem(item: BookmarkItem, modifier: Modifier) {
             filledColor = MaterialTheme.colorScheme.inverseOnSurface.copy(.75f)
         )
         Column(
-            Modifier.padding(24.dp)) {
+            Modifier.padding(24.dp)
+        ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
-                        item.author.name,
+                        item.author.name.maxCharacters(25),
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        item.author.username,
+                        item.author.username.maxCharacters(25),
                         fontSize = 13.sp,
                         color = Color.Gray
                     )
                 }
             }
             Spacer(modifier = Modifier.size(8.dp))
-            Text(text = item.title)
+            Text(text = item.title, maxLines = 4, overflow = TextOverflow.Ellipsis)
             Spacer(modifier = Modifier.size(24.dp))
             BookmarkTags(tags = item.tags)
         }

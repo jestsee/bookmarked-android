@@ -10,17 +10,20 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import com.example.bookmarked_android.ui.theme.jetbrainsMonofontFamily
 
 @Composable
-fun TextUrl(modifier: Modifier = Modifier, text: String, url: String, fontSize: TextUnit = 18.sp) {
+fun TextUrl(modifier: Modifier = Modifier, text: String, url: String, fontSize: TextUnit = 16.sp) {
     val uriHandler = LocalUriHandler.current
     val annotatedText = buildAnnotatedString {
         pushStringAnnotation(tag = "URL", annotation = url)
 
         withStyle(
             style = SpanStyle(
+//                color = Primary.copy(.8f),
                 color = Color(0xFF8E85FF),
-                fontSize = fontSize
+                fontSize = fontSize,
+                fontFamily = jetbrainsMonofontFamily
             )
         ) { append(text) }
         pop()

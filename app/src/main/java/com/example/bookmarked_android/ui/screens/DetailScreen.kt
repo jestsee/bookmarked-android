@@ -2,20 +2,23 @@ package com.example.bookmarked_android.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.bookmarked_android.maxCharacters
 import com.example.bookmarked_android.mock.mockBookmarkDetails
 import com.example.bookmarked_android.model.Author
 import com.example.bookmarked_android.model.BookmarkDetail
@@ -138,6 +142,9 @@ private fun Details(
                 shouldDisplayAuthor = nextAuthorUsername == null || nextAuthorUsername != item.author.username
             )
         }
+//        item {
+//            BookmarkTags(tags = )
+//        }
         // See in Notion
         // See in twitter
         // Bookmarked at
@@ -156,9 +163,14 @@ private fun DetailItem(
     shouldDisplayAuthor: Boolean = true,
     onImageClick: (String) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         detail.contents.map {
-            ContentItem(it, isFirstItem && it == detail.contents.first(), onImageClick)
+            ContentItem(
+                content = it,
+                nextContent = detail.contents.getOrNull(detail.contents.indexOf(it) + 1),
+                isFirstContentItem = isFirstItem && it == detail.contents.first(),
+                onImageClick = onImageClick
+            )
         }
         if (shouldDisplayAuthor) AuthorCard(detail.author)
     }
@@ -173,12 +185,18 @@ private fun AuthorCard(author: Author) {
     ) {
         Divider(modifier = Modifier.weight(1f))
         Text(
-            text = author.username,
+            text = author.username.maxCharacters(20),
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
         )
+        Spacer(
+            modifier = Modifier
+                .padding(horizontal = 2.dp)
+                .size(5.dp)
+                .background(Primary, shape = CircleShape)
+        )
         Text(
-            text = author.name, fontSize = 14.sp, fontWeight = FontWeight.Medium
+            text = author.name.maxCharacters(24), fontSize = 14.sp, fontWeight = FontWeight.Medium
         )
         AsyncImage(
             modifier = Modifier
@@ -191,11 +209,13 @@ private fun AuthorCard(author: Author) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ContentItem(
     content: Content,
+    nextContent: Content? = null,
     isFirstContentItem: Boolean,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
 ) {
     if (isFirstContentItem && content is TextContent) {
         return Text(
@@ -206,15 +226,30 @@ private fun ContentItem(
         )
     }
     if (content is TextContent) {
-        if (content.url != null) return TextUrl(
-            text = content.text, url = content.url
-        )
-        return Text(text = content.text)
+        if (nextContent is TextContent && nextContent.url != null && nextContent.shouldAddNewLine == false) {
+            return FlowRow(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(text = content.text)
+                TextUrl(
+                    text = nextContent.text, url = nextContent.url
+                )
+            }
+        }
+
+        if (content.url != null && content.shouldAddNewLine == true) {
+            return TextUrl(text = content.text, url = content.url)
+        }
+
+        if (content.shouldAddNewLine == false) return
+
+        Text(text = content.text)
     }
     if (content is ImageContent) {
         AsyncImage(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(vertical = 8.dp)
                 .heightIn(0.dp, 240.dp)
                 .clip(RoundedCornerShape(8))
                 .pointerInput(Unit) {
@@ -225,7 +260,6 @@ private fun ContentItem(
             contentScale = ContentScale.Crop,
             placeholder = ASYNC_IMAGE_PLACEHOLDER,
         )
-        Spacer(modifier = Modifier.height(4.dp))
     }
     if (content is CalloutContent) {
         Row(
