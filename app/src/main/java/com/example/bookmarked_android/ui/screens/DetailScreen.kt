@@ -60,6 +60,7 @@ import com.example.bookmarked_android.ui.components.TextUrl
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.BookmarkedandroidTheme
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
+import com.example.bookmarked_android.ui.theme.Primary
 
 /**
  * Preview
@@ -105,7 +106,9 @@ fun DetailScreenUi(
     }
 }
 
-
+/**
+ * UI Logics start here
+ */
 @Composable
 private fun Details(
     details: List<BookmarkDetail>, topPadding: Dp, bottomPadding: Dp,
@@ -122,14 +125,17 @@ private fun Details(
             top = 32.dp,
             bottom = bottomPadding
         ),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         itemsIndexed(details) { _, item ->
+            val nextItem = details.getOrNull(details.indexOf(item) + 1)
+            val nextAuthorUsername = nextItem?.author?.username
+
             DetailItem(
-                item,
-                // TODO prevent to show author if redundant
-                item == details.first(),
-                onImageClick = { imageUrl -> selectedImageUrl = imageUrl }
+                detail = item,
+                isFirstItem = item == details.first(),
+                onImageClick = { imageUrl -> selectedImageUrl = imageUrl },
+                shouldDisplayAuthor = nextAuthorUsername == null || nextAuthorUsername != item.author.username
             )
         }
         // See in Notion
@@ -176,7 +182,7 @@ private fun AuthorCard(author: Author) {
         )
         AsyncImage(
             modifier = Modifier
-                .size(32.dp)
+                .size(24.dp)
                 .clip(shape = RoundedCornerShape(50)),
             model = author.avatar,
             contentDescription = "Author's avatar",
@@ -195,7 +201,7 @@ private fun ContentItem(
         return Text(
             text = content.text,
             fontSize = 28.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Bold,
             lineHeight = 32.sp
         )
     }
@@ -223,7 +229,7 @@ private fun ContentItem(
     }
     if (content is CalloutContent) {
         Row(
-            modifier = Modifier.leftBorder(4.dp, Color(0xFF7A70FF)),
+            modifier = Modifier.leftBorder(3.dp, Primary),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Spacer(modifier = Modifier.width(0.dp))
@@ -242,16 +248,16 @@ fun Modifier.leftBorder(strokeWidth: Dp, color: Color) = composed(factory = {
         val strokeWidthHalf = strokeWidthPx / 2
 
         drawLine(
-            color = color,
-            start = Offset(x = strokeWidthHalf, y = 24.dp.toPx()),
-            end = Offset(x = strokeWidthHalf, y = height - 16.dp.toPx()),
+            color = color.copy(.75f),
+            start = Offset(x = strokeWidthHalf, y = (strokeWidthPx * 1.5f) + 20.dp.toPx()),
+            end = Offset(x = strokeWidthHalf, y = height - 12.dp.toPx()),
             strokeWidth = strokeWidthPx,
             cap = StrokeCap.Round // This sets the tip to be rounded
         )
 
         drawCircle(
             color = color,
-            radius = strokeWidthPx * 1.25f,
+            radius = strokeWidthPx * 1.5f,
             center = Offset(x = strokeWidthHalf, y = 12.dp.toPx())
         )
     }
