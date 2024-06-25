@@ -12,11 +12,11 @@ data class BookmarkList(
 @Immutable
 data class BookmarkItem(
     @SerializedName("author")
-    val author: String,
+    val author: Author,
     @SerializedName("createdTime")
     val createdTime: String,
     @SerializedName("icon")
-    val icon: String,
+    val type: String,
     @SerializedName("id")
     val id: String,
     @SerializedName("isLiked")

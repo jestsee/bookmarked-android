@@ -1,5 +1,6 @@
 package com.example.bookmarked_android.ui.components
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -12,8 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,18 +43,18 @@ fun BookmarkDialog(bookmark: BookmarkItem, onDismissRequest: () -> Unit) {
                         modifier = Modifier
                             .size(48.dp)
                             .clip(shape = RoundedCornerShape(50)),
-                        model = bookmark.icon,
+                        model = bookmark.author.avatar,
                         contentDescription = "user's twitter avatar"
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Someone",
+                            text = bookmark.author.name,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            text = "@username",
+                            text = bookmark.author.username,
                             fontSize = 16.sp,
                         )
                     }
@@ -77,7 +78,7 @@ fun BookmarkDialog(bookmark: BookmarkItem, onDismissRequest: () -> Unit) {
 fun BookmarkTags(tags: List<Tag>) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(-8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         tags.forEach { tag ->
             BookmarkTag(tag)
@@ -87,8 +88,17 @@ fun BookmarkTags(tags: List<Tag>) {
 
 @Composable
 fun BookmarkTag(tag: Tag) {
-    AssistChip(
-        modifier = Modifier.padding(0.dp),
-        onClick = { /*TODO*/ },
-        label = { Text(text = tag.name, fontSize = 12.sp) })
+    val color = MaterialTheme.colorScheme.onSurface.copy(.75f)
+    Text(
+        tag.name,
+        modifier = Modifier
+            .border(
+                width = 0.5.dp,
+                color = color,
+                shape = RoundedCornerShape(4.dp)
+            )
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        fontSize = 12.sp,
+        color = color
+    )
 }

@@ -13,8 +13,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.Screen
@@ -67,11 +69,14 @@ fun GreetingsText() {
         Column(Modifier.padding(horizontal = HORIZONTAL_PADDING)) {
             Text(
                 text = "Welcome back,",
-                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
             )
             Spacer(modifier = Modifier.height(2.dp))
-            Text(text = "Name here", style = MaterialTheme.typography.displaySmall)
+            Text(
+                text = "Jesica W.",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+            )
         }
     }
 }

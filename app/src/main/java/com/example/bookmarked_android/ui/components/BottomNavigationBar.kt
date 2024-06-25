@@ -64,7 +64,7 @@ fun BottomNavigationBar(
                 Box(
                     modifier =
                     Modifier
-                        .size(48.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
                         .then(if (index == selectedIndex) Modifier.background(Primary) else Modifier)
                         .clickable(onClick = {
@@ -80,7 +80,7 @@ fun BottomNavigationBar(
                         painter = painterResource(id = item.iconId),
                         contentDescription = item.title,
                         tint = MaterialTheme.colorScheme.onSurface
-//                        tint = if (selectedIndex == index) MaterialTheme.colorScheme.inverseOnSurface else MaterialTheme.colorScheme.onSurface
+//                        tint = if (selectedIndex == index) Primary else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -100,7 +100,7 @@ fun CustomAppBar(
             .padding(bottom = 16.dp)
     ) {
         Surface(
-            tonalElevation = 4.dp,
+            tonalElevation = 0.dp,
             modifier = modifier
                 .clip(RoundedCornerShape(50))
                 .align(Alignment.Center)
