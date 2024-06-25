@@ -19,7 +19,8 @@ data class TextContent(
     override val id: String,
     override val type: String = "text",
     val text: String,
-    val url: String?
+    val url: String?,
+    val shouldAddNewLine: Boolean? = false
 ) : Content()
 
 @Immutable
