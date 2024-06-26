@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.Screen
+import com.example.bookmarked_android.toJson
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
@@ -37,10 +38,10 @@ fun BookmarksScreen(
 
                 items(bookmarkedUiState.bookmarkList.items) { item ->
                     val onNavigateToDetail =
-                        { id: String -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id") }
+                        { id: String, tags: String -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id/$tags") }
                     RecentBookmarkItem(item = item, modifier = Modifier.pointerInput(Unit) {
                         detectTapGestures(
-                            onTap = { onNavigateToDetail(item.id) }
+                            onTap = { onNavigateToDetail(item.id, item.tags.toJson()) }
                         )
                     })
                 }
