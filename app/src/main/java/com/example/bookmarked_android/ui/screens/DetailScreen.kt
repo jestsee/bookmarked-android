@@ -7,7 +7,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -51,20 +50,24 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.bookmarked_android.maxCharacters
+import com.example.bookmarked_android.mock.mockBookmarTags
 import com.example.bookmarked_android.mock.mockBookmarkDetails
 import com.example.bookmarked_android.model.Author
 import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.CalloutContent
 import com.example.bookmarked_android.model.Content
 import com.example.bookmarked_android.model.ImageContent
+import com.example.bookmarked_android.model.Tag
 import com.example.bookmarked_android.model.TextContent
 import com.example.bookmarked_android.model.toBookmarkDetail
+import com.example.bookmarked_android.ui.components.BookmarkTags
 import com.example.bookmarked_android.ui.components.ImageDialog
 import com.example.bookmarked_android.ui.components.TextUrl
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.BookmarkedandroidTheme
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
+import com.google.gson.Gson
 
 /**
  * Preview
@@ -73,13 +76,13 @@ class DetailScreenPreviewParameterProvider : PreviewParameterProvider<List<Bookm
     override val values = sequenceOf(mockBookmarkDetails)
 }
 
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 2000)
 @Composable
 fun DetailScreenPreview(
     @PreviewParameter(DetailScreenPreviewParameterProvider::class) bookmarks: List<BookmarkDetail>
 ) {
     BookmarkedandroidTheme {
-        DetailScreenUi(BookmarkDetailUiState.Success(bookmarks), 0.dp, 0.dp)
+        DetailScreenUi(BookmarkDetailUiState.Success(bookmarks), mockBookmarTags, 0.dp, 0.dp)
     }
 }
 
@@ -87,17 +90,25 @@ fun DetailScreenPreview(
  * Implementation
  */
 @Composable
-fun DetailScreen(navController: NavController, pageId: String, topPadding: Dp, bottomPadding: Dp) {
+fun DetailScreen(
+    navController: NavController,
+    pageId: String,
+    tags: String,
+    topPadding: Dp,
+    bottomPadding: Dp
+) {
     val viewModel: BookmarkDetailViewModel =
         viewModel(factory = remember { BookmarkDetailViewModelFactory(pageId) })
     val bookmarkDetailUiState = viewModel.bookmarkDetailUiState
+    val parsedTags = Gson().fromJson(tags, Array<Tag>::class.java).toList()
 
-    DetailScreenUi(bookmarkDetailUiState, topPadding, bottomPadding)
+    DetailScreenUi(bookmarkDetailUiState, parsedTags, topPadding, bottomPadding)
 }
 
 @Composable
 fun DetailScreenUi(
     bookmarkDetailUiState: BookmarkDetailUiState,
+    tags: List<Tag>,
     topPadding: Dp,
     bottomPadding: Dp
 ) {
@@ -105,7 +116,7 @@ fun DetailScreenUi(
         is BookmarkDetailUiState.Error -> Text(text = "Error")
         is BookmarkDetailUiState.Loading -> Text(text = "Loading...")
         is BookmarkDetailUiState.Success -> {
-            Details(bookmarkDetailUiState.details, topPadding, bottomPadding)
+            Details(bookmarkDetailUiState.details, tags, topPadding, bottomPadding)
         }
     }
 }
@@ -115,7 +126,7 @@ fun DetailScreenUi(
  */
 @Composable
 private fun Details(
-    details: List<BookmarkDetail>, topPadding: Dp, bottomPadding: Dp,
+    details: List<BookmarkDetail>, tags: List<Tag>, topPadding: Dp, bottomPadding: Dp,
 ) {
     var selectedImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -142,12 +153,19 @@ private fun Details(
                 shouldDisplayAuthor = nextAuthorUsername == null || nextAuthorUsername != item.author.username
             )
         }
-//        item {
-//            BookmarkTags(tags = )
-//        }
+        item {
+            Text(
+                "TAGS",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground.copy(.75f),
+                letterSpacing = 1.sp
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            BookmarkTags(tags)
+        }
         // See in Notion
         // See in twitter
-        // Bookmarked at
     }
 
     if (selectedImageUrl != null) {
@@ -167,7 +185,6 @@ private fun DetailItem(
         detail.contents.map {
             ContentItem(
                 content = it,
-                nextContent = detail.contents.getOrNull(detail.contents.indexOf(it) + 1),
                 isFirstContentItem = isFirstItem && it == detail.contents.first(),
                 onImageClick = onImageClick
             )
@@ -213,7 +230,6 @@ private fun AuthorCard(author: Author) {
 @Composable
 private fun ContentItem(
     content: Content,
-    nextContent: Content? = null,
     isFirstContentItem: Boolean,
     onImageClick: (String) -> Unit,
 ) {
@@ -225,28 +241,19 @@ private fun ContentItem(
             lineHeight = 32.sp
         )
     }
+
     if (content is TextContent) {
-        if (nextContent is TextContent && nextContent.url != null && nextContent.shouldAddNewLine == false) {
-            return FlowRow(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                Text(text = content.text)
-                TextUrl(
-                    text = nextContent.text, url = nextContent.url
-                )
-            }
+        if (content.url != null) {
+            return TextUrl(
+                text = content.text,
+                url = content.url
+            )
         }
-
-        if (content.url != null && content.shouldAddNewLine == true) {
-            return TextUrl(text = content.text, url = content.url)
-        }
-
-        if (content.shouldAddNewLine == false) return
-
-        Text(text = content.text)
+        return Text(text = content.text)
     }
+
     if (content is ImageContent) {
-        AsyncImage(
+        return AsyncImage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
@@ -262,7 +269,7 @@ private fun ContentItem(
         )
     }
     if (content is CalloutContent) {
-        Row(
+        return Row(
             modifier = Modifier.leftBorder(3.dp, Primary),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {

@@ -33,13 +33,14 @@ import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.R
 import com.example.bookmarked_android.maxCharacters
 import com.example.bookmarked_android.model.BookmarkItem
+import com.example.bookmarked_android.toJson
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
 
 @Composable
 fun RecentBookmarks(
     bookmarks: List<BookmarkItem>,
-    onNavigateToDetail: (String) -> Unit,
+    onNavigateToDetail: (String, String) -> Unit,
 ) {
     var pressedBookmarkId by rememberSaveable { mutableStateOf<String?>(null) }
     val haptics = LocalHapticFeedback.current
@@ -57,7 +58,9 @@ fun RecentBookmarks(
                 bookmark,
                 modifier = Modifier.pointerInput(Unit) {
                     detectTapGestures(
-                        onTap = { onNavigateToDetail(bookmark.id) },
+                        onTap = {
+                            onNavigateToDetail(bookmark.id, bookmark.tags.toJson())
+                        },
                         onLongPress = {
                             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                             pressedBookmarkId = bookmark.id

@@ -33,7 +33,7 @@ enum class Screen {
 sealed class NavigationItem(val route: String) {
     data object Home : NavigationItem(Screen.HOME.name)
     data object BookmarkList : NavigationItem(Screen.BOOKMARK_LIST.name)
-    data object BookmarkDetail : NavigationItem(Screen.BOOKMARK_DETAIL.name + "/{bookmarkId}")
+    data object BookmarkDetail : NavigationItem(Screen.BOOKMARK_DETAIL.name + "/{bookmarkId}/{tags}")
 }
 
 @Composable
@@ -96,11 +96,14 @@ fun NavigationHost(
             }
             composable(NavigationItem.BookmarkDetail.route) { backStackEntry ->
                 val bookmarkId = backStackEntry.arguments?.getString("bookmarkId")
+                val tags = backStackEntry.arguments?.getString("tags")
+
                 DetailScreen(
                     navController = navController,
                     topPadding = innerPadding.calculateTopPadding(),
                     bottomPadding = BOTTOM_PADDING,
-                    pageId = bookmarkId!!
+                    pageId = bookmarkId!!,
+                    tags = tags!!
                 )
             }
         }
