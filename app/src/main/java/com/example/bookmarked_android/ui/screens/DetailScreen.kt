@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,7 +39,12 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -58,15 +63,15 @@ import com.example.bookmarked_android.model.CalloutContent
 import com.example.bookmarked_android.model.Content
 import com.example.bookmarked_android.model.ImageContent
 import com.example.bookmarked_android.model.Tag
-import com.example.bookmarked_android.model.TextContent
+import com.example.bookmarked_android.model.TextsContent
 import com.example.bookmarked_android.model.toBookmarkDetail
 import com.example.bookmarked_android.ui.components.BookmarkTags
 import com.example.bookmarked_android.ui.components.ImageDialog
-import com.example.bookmarked_android.ui.components.TextUrl
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.BookmarkedandroidTheme
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
+import com.example.bookmarked_android.ui.theme.jetbrainsMonofontFamily
 import com.google.gson.Gson
 
 /**
@@ -226,30 +231,78 @@ private fun AuthorCard(author: Author) {
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ContentItem(
     content: Content,
     isFirstContentItem: Boolean,
     onImageClick: (String) -> Unit,
 ) {
-    if (isFirstContentItem && content is TextContent) {
-        return Text(
-            text = content.text,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            lineHeight = 32.sp
-        )
-    }
+//    if (isFirstContentItem && content is TextContent) {
+//        return Text(
+//            text = content.text,
+//            fontSize = 28.sp,
+//            fontWeight = FontWeight.Bold,
+//            lineHeight = 32.sp
+//        )
+//    }
+//
+//    if (content is TextContent) {
+//        if (content.url != null) {
+//            return TextUrl(
+//                text = content.text,
+//                url = content.url
+//            )
+//        }
+//        return Text(text = content.text)
+//    }
 
-    if (content is TextContent) {
-        if (content.url != null) {
-            return TextUrl(
-                text = content.text,
-                url = content.url
+    if (content is TextsContent) {
+        val uriHandler = LocalUriHandler.current
+        val spanStyle = { isTitle: Boolean ->
+            SpanStyle(
+                fontFamily = jetbrainsMonofontFamily,
+                fontSize = if (isTitle) 32.sp else 16.sp,
+                fontWeight = if (isTitle) FontWeight.Bold else FontWeight.Normal,
             )
         }
-        return Text(text = content.text)
+
+        val annotatedText = buildAnnotatedString {
+            content.texts.forEach {
+                if (it.text == "\n" && it == content.texts.last()) return@forEach
+
+                val isTitle = isFirstContentItem && it == content.texts.first()
+
+                if (it.url != null) {
+                    pushStringAnnotation(tag = "URL", annotation = it.url)
+                    withStyle(
+                        style = spanStyle(isTitle).copy(
+                            color = Color(0xFF8E85FF)
+                        )
+                    ) { append(it.text) }
+
+                    pop()
+                    return@forEach
+                }
+
+                withStyle(style = spanStyle(isTitle)) {
+                    append(it.text)
+                }
+            }
+        }
+
+        ClickableText(
+            style = TextStyle(color = MaterialTheme.colorScheme.onBackground),
+            text = annotatedText,
+            onClick = { offset ->
+                annotatedText.getStringAnnotations(
+                    tag = "URL",
+                    start = offset,
+                    end = offset
+                ).firstOrNull()?.let { annotation ->
+                    uriHandler.openUri(annotation.item)
+                }
+            }
+        )
     }
 
     if (content is ImageContent) {
