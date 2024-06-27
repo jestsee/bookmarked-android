@@ -1,7 +1,10 @@
 package com.example.bookmarked_android.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -9,6 +12,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -21,6 +25,7 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ImageDialog(
     url: String,
@@ -38,7 +43,7 @@ fun ImageDialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        AsyncImage(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black)
@@ -58,18 +63,32 @@ fun ImageDialog(
                             val maxY = (imageSize.height * (scale - 1)) / 2
 
                             offsetX = (offsetX + pan.x * scale).coerceIn(-maxX, maxX)
-//                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
+                            //                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
                             return@detectTransformGestures
                         }
                         offsetX = 0f
                         offsetY = 0f
                     }
                 },
-            model = url,
-            contentDescription = "Content image",
-            contentScale = ContentScale.FillWidth,
-            placeholder = ASYNC_IMAGE_PLACEHOLDER
-        )
+        ) {
+            AsyncImage(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .combinedClickable(onDoubleClick = {
+                        if (scale >= 2f) {
+                            scale = 1f
+                            offsetX = 0f
+                            offsetY = 0f
+                            return@combinedClickable
+                        }
+                        scale = 2f
+                    }) {},
+                model = url,
+                contentDescription = "Content image",
+                contentScale = ContentScale.FillWidth,
+                placeholder = ASYNC_IMAGE_PLACEHOLDER
+            )
+        }
 
 
     }
