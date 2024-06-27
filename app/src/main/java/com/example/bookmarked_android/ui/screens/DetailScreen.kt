@@ -1,6 +1,5 @@
 package com.example.bookmarked_android.ui.screens
 
-import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -30,15 +29,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -54,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.bookmarked_android.leftBorder
 import com.example.bookmarked_android.maxCharacters
 import com.example.bookmarked_android.mock.mockBookmarTags
 import com.example.bookmarked_android.mock.mockBookmarkDetails
@@ -96,11 +91,7 @@ fun DetailScreenPreview(
  */
 @Composable
 fun DetailScreen(
-    navController: NavController,
-    pageId: String,
-    tags: String,
-    topPadding: Dp,
-    bottomPadding: Dp
+    navController: NavController, pageId: String, tags: String, topPadding: Dp, bottomPadding: Dp
 ) {
     val viewModel: BookmarkDetailViewModel =
         viewModel(factory = remember { BookmarkDetailViewModelFactory(pageId) })
@@ -112,10 +103,7 @@ fun DetailScreen(
 
 @Composable
 fun DetailScreenUi(
-    bookmarkDetailUiState: BookmarkDetailUiState,
-    tags: List<Tag>,
-    topPadding: Dp,
-    bottomPadding: Dp
+    bookmarkDetailUiState: BookmarkDetailUiState, tags: List<Tag>, topPadding: Dp, bottomPadding: Dp
 ) {
     when (bookmarkDetailUiState) {
         is BookmarkDetailUiState.Error -> Text(text = "Error")
@@ -142,8 +130,7 @@ private fun Details(
             HORIZONTAL_PADDING,
         ),
         contentPadding = PaddingValues(
-            top = 32.dp,
-            bottom = bottomPadding
+            top = 32.dp, bottom = bottomPadding
         ),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
@@ -257,52 +244,16 @@ private fun ContentItem(
 //    }
 
     if (content is TextsContent) {
-        val uriHandler = LocalUriHandler.current
-        val spanStyle = { isTitle: Boolean ->
-            SpanStyle(
-                fontFamily = jetbrainsMonofontFamily,
-                fontSize = if (isTitle) 32.sp else 16.sp,
-                fontWeight = if (isTitle) FontWeight.Bold else FontWeight.Normal,
-            )
+        if (isFirstContentItem) {
+            // separate the content with its title
+            val title = TextsContent(texts = arrayListOf(content.texts.first()))
+            TextsContentComposable(content = title, isTitle = true)
+
+            val restContent = TextsContent(texts = content.texts.drop(1))
+            TextsContentComposable(content = restContent)
+            return
         }
-
-        val annotatedText = buildAnnotatedString {
-            content.texts.forEach {
-                if (it.text == "\n" && it == content.texts.last()) return@forEach
-
-                val isTitle = isFirstContentItem && it == content.texts.first()
-
-                if (it.url != null) {
-                    pushStringAnnotation(tag = "URL", annotation = it.url)
-                    withStyle(
-                        style = spanStyle(isTitle).copy(
-                            color = Color(0xFF8E85FF)
-                        )
-                    ) { append(it.text) }
-
-                    pop()
-                    return@forEach
-                }
-
-                withStyle(style = spanStyle(isTitle)) {
-                    append(it.text)
-                }
-            }
-        }
-
-        ClickableText(
-            style = TextStyle(color = MaterialTheme.colorScheme.onBackground),
-            text = annotatedText,
-            onClick = { offset ->
-                annotatedText.getStringAnnotations(
-                    tag = "URL",
-                    start = offset,
-                    end = offset
-                ).firstOrNull()?.let { annotation ->
-                    uriHandler.openUri(annotation.item)
-                }
-            }
-        )
+        TextsContentComposable(content = content)
     }
 
     if (content is ImageContent) {
@@ -332,27 +283,51 @@ private fun ContentItem(
     }
 }
 
-@SuppressLint("ModifierFactoryUnreferencedReceiver")
-fun Modifier.leftBorder(strokeWidth: Dp, color: Color) = composed(factory = {
-    val density = LocalDensity.current
-    val strokeWidthPx = density.run { strokeWidth.toPx() }
+@Composable
+fun TextsContentComposable(content: TextsContent, isTitle: Boolean = false) {
+    val uriHandler = LocalUriHandler.current
+    val spanStyle = SpanStyle(
+        fontFamily = jetbrainsMonofontFamily,
+        fontSize = if (isTitle) 32.sp else 16.sp,
+        fontWeight = if (isTitle) FontWeight.Bold else FontWeight.Normal
+    )
 
-    Modifier.drawBehind {
-        val height = size.height
-        val strokeWidthHalf = strokeWidthPx / 2
+    val texts = content.texts.toMutableList()
 
-        drawLine(
-            color = color.copy(.75f),
-            start = Offset(x = strokeWidthHalf, y = (strokeWidthPx * 1.5f) + 20.dp.toPx()),
-            end = Offset(x = strokeWidthHalf, y = height - 12.dp.toPx()),
-            strokeWidth = strokeWidthPx,
-            cap = StrokeCap.Round // This sets the tip to be rounded
-        )
-
-        drawCircle(
-            color = color,
-            radius = strokeWidthPx * 1.5f,
-            center = Offset(x = strokeWidthHalf, y = 12.dp.toPx())
-        )
+    while (texts.first().text == "" || texts.first().text == "\n") {
+        texts.removeFirst()
     }
-})
+
+    val annotatedText = buildAnnotatedString {
+        texts.forEach {
+            // skip empty line at the beginning and the end of the paragraph
+            if (it.text == "\n" && it == content.texts.last()) return@forEach
+
+            if (it.url != null) {
+                pushStringAnnotation(tag = "URL", annotation = it.url)
+                withStyle(
+                    style = spanStyle.copy(
+                        color = Color(0xFF8E85FF)
+                    )
+                ) { append(it.text) }
+
+                pop()
+                return@forEach
+            }
+
+            withStyle(style = spanStyle) {
+                append(it.text)
+            }
+        }
+    }
+
+    ClickableText(style = TextStyle(color = MaterialTheme.colorScheme.onBackground).copy(lineHeight = if (isTitle) 32.sp else 26.sp),
+        text = annotatedText,
+        onClick = { offset ->
+            annotatedText.getStringAnnotations(
+                tag = "URL", start = offset, end = offset
+            ).firstOrNull()?.let { annotation ->
+                uriHandler.openUri(annotation.item)
+            }
+        })
+}
