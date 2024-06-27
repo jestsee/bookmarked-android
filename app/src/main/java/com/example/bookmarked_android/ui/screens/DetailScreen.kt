@@ -224,25 +224,6 @@ private fun ContentItem(
     isFirstContentItem: Boolean,
     onImageClick: (String) -> Unit,
 ) {
-//    if (isFirstContentItem && content is TextContent) {
-//        return Text(
-//            text = content.text,
-//            fontSize = 28.sp,
-//            fontWeight = FontWeight.Bold,
-//            lineHeight = 32.sp
-//        )
-//    }
-//
-//    if (content is TextContent) {
-//        if (content.url != null) {
-//            return TextUrl(
-//                text = content.text,
-//                url = content.url
-//            )
-//        }
-//        return Text(text = content.text)
-//    }
-
     if (content is TextsContent) {
         if (isFirstContentItem) {
             // separate the content with its title
@@ -294,13 +275,15 @@ fun TextsContentComposable(content: TextsContent, isTitle: Boolean = false) {
 
     val texts = content.texts.toMutableList()
 
-    while (texts.first().text == "" || texts.first().text == "\n") {
+    while (texts.isNotEmpty() && (texts.first().text == "" || texts.first().text == "\n")) {
         texts.removeFirst()
     }
 
+    if (texts.isEmpty()) return
+
     val annotatedText = buildAnnotatedString {
         texts.forEach {
-            // skip empty line at the beginning and the end of the paragraph
+            // skip empty line at the end of the paragraph
             if (it.text == "\n" && it == content.texts.last()) return@forEach
 
             if (it.url != null) {
