@@ -20,9 +20,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
-import com.example.bookmarked_android.ui.screens.BookmarkListViewModel
-import com.example.bookmarked_android.ui.screens.BookmarksScreen
-import com.example.bookmarked_android.ui.screens.DetailScreen
+import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
+import com.example.bookmarked_android.ui.screens.bookmarks.BookmarksScreen
+import com.example.bookmarked_android.ui.screens.detail.DetailScreen
 import com.example.bookmarked_android.ui.screens.HomeScreen
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 
