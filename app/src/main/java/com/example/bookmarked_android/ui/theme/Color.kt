@@ -14,3 +14,4 @@ val Pink40 = Color(0xFF7D5260)
  * Colors
  */
 val Primary = Color(0xFFE83105)
+val Purple = Color(0xFF8E85FF)

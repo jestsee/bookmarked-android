@@ -1,7 +1,6 @@
-package com.example.bookmarked_android.ui.screens
+package com.example.bookmarked_android.ui.screens.detail
 
 import android.content.res.Configuration
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,16 +8,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,15 +27,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
@@ -48,11 +39,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.bookmarked_android.R
 import com.example.bookmarked_android.leftBorder
-import com.example.bookmarked_android.maxCharacters
 import com.example.bookmarked_android.mock.mockBookmarTags
 import com.example.bookmarked_android.mock.mockBookmarkDetails
-import com.example.bookmarked_android.model.Author
 import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.CalloutContent
 import com.example.bookmarked_android.model.Content
@@ -66,7 +56,6 @@ import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.BookmarkedandroidTheme
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
-import com.example.bookmarked_android.ui.theme.jetbrainsMonofontFamily
 import com.google.gson.Gson
 
 /**
@@ -145,19 +134,40 @@ private fun Details(
                 shouldDisplayAuthor = nextAuthorUsername == null || nextAuthorUsername != item.author.username
             )
         }
+
+        if (tags.isNotEmpty()) {
+            item {
+                Column {
+                    Text(
+                        "TAGS",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground.copy(.75f),
+                        letterSpacing = 1.sp
+                    )
+                    Spacer(modifier = Modifier.size(8.dp))
+                    BookmarkTags(tags)
+                }
+            }
+        }
+
         item {
             Text(
-                "TAGS",
+                "OPEN IN",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground.copy(.75f),
-                letterSpacing = 1.sp
+                letterSpacing = 1.sp,
             )
-            Spacer(modifier = Modifier.size(8.dp))
-            BookmarkTags(tags)
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OpenInButton(iconPainter = R.drawable.icon_x)
+                OpenInButton(iconPainter = R.drawable.icon_notion)
+            }
         }
-        // See in Notion
-        // See in twitter
     }
 
     if (selectedImageUrl != null) {
@@ -186,39 +196,6 @@ private fun DetailItem(
 }
 
 @Composable
-private fun AuthorCard(author: Author) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
-    ) {
-        Divider(modifier = Modifier.weight(1f))
-        Text(
-            text = author.username.maxCharacters(20),
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onBackground.copy(0.8f)
-        )
-        Spacer(
-            modifier = Modifier
-                .padding(horizontal = 2.dp)
-                .size(5.dp)
-                .background(Primary, shape = CircleShape)
-        )
-        Text(
-            text = author.name.maxCharacters(24), fontSize = 14.sp, fontWeight = FontWeight.Medium
-        )
-        AsyncImage(
-            modifier = Modifier
-                .size(24.dp)
-                .clip(shape = RoundedCornerShape(50)),
-            model = author.avatar,
-            contentDescription = "Author's avatar",
-            placeholder = ASYNC_IMAGE_PLACEHOLDER,
-        )
-    }
-}
-
-@Composable
 private fun ContentItem(
     content: Content,
     isFirstContentItem: Boolean,
@@ -228,13 +205,13 @@ private fun ContentItem(
         if (isFirstContentItem) {
             // separate the content with its title
             val title = TextsContent(texts = arrayListOf(content.texts.first()))
-            TextsContentComposable(content = title, isTitle = true)
+            DetailTexts(content = title, isTitle = true)
 
             val restContent = TextsContent(texts = content.texts.drop(1))
-            TextsContentComposable(content = restContent)
+            DetailTexts(content = restContent)
             return
         }
-        TextsContentComposable(content = content)
+        DetailTexts(content = content)
     }
 
     if (content is ImageContent) {
@@ -262,55 +239,4 @@ private fun ContentItem(
             DetailItem(detail = content.toBookmarkDetail(), onImageClick = onImageClick)
         }
     }
-}
-
-@Composable
-fun TextsContentComposable(content: TextsContent, isTitle: Boolean = false) {
-    val uriHandler = LocalUriHandler.current
-    val spanStyle = SpanStyle(
-        fontFamily = jetbrainsMonofontFamily,
-        fontSize = if (isTitle) 32.sp else 16.sp,
-        fontWeight = if (isTitle) FontWeight.Bold else FontWeight.Normal
-    )
-
-    val texts = content.texts.toMutableList()
-
-    while (texts.isNotEmpty() && (texts.first().text == "" || texts.first().text == "\n")) {
-        texts.removeFirst()
-    }
-
-    if (texts.isEmpty()) return
-
-    val annotatedText = buildAnnotatedString {
-        texts.forEach {
-            // skip empty line at the end of the paragraph
-            if (it.text == "\n" && it == content.texts.last()) return@forEach
-
-            if (it.url != null) {
-                pushStringAnnotation(tag = "URL", annotation = it.url)
-                withStyle(
-                    style = spanStyle.copy(
-                        color = Color(0xFF8E85FF)
-                    )
-                ) { append(it.text) }
-
-                pop()
-                return@forEach
-            }
-
-            withStyle(style = spanStyle) {
-                append(it.text)
-            }
-        }
-    }
-
-    ClickableText(style = TextStyle(color = MaterialTheme.colorScheme.onBackground).copy(lineHeight = if (isTitle) 32.sp else 26.sp),
-        text = annotatedText,
-        onClick = { offset ->
-            annotatedText.getStringAnnotations(
-                tag = "URL", start = offset, end = offset
-            ).firstOrNull()?.let { annotation ->
-                uriHandler.openUri(annotation.item)
-            }
-        })
 }

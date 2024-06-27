@@ -1,4 +1,4 @@
-package com.example.bookmarked_android.ui.screens
+package com.example.bookmarked_android.ui.screens.bookmarks
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

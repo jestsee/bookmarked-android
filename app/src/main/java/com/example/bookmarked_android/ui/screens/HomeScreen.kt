@@ -21,6 +21,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.Screen
 import com.example.bookmarked_android.ui.components.RecentBookmarks
+import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListUiState
+import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
 @Composable
@@ -39,7 +41,7 @@ fun HomeScreen(
             .padding(bottom = bottomPadding),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         GreetingsText()
         when (bookmarkedUiState) {
             is BookmarkListUiState.Error -> Text(text = "Error")
@@ -73,7 +75,7 @@ fun GreetingsText() {
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Jesica W.",
+                text = "Jesica",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
             )

@@ -1,4 +1,4 @@
-package com.example.bookmarked_android.ui.screens
+package com.example.bookmarked_android.ui.screens.bookmarks
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
