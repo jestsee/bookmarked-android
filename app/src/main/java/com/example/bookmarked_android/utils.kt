@@ -28,12 +28,13 @@ fun List<Tag>.toJson(): String {
     return jsonTags
 }
 
-private fun urlEncoder(url: String): String {
+fun urlEncoder(url: String): String {
     return URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
 }
 
 fun DetailScreenParams.toJson(): String {
     val encoded = this.copy(
+        title = urlEncoder(this.title),
         tweetUrl = urlEncoder(this.tweetUrl),
         notionUrl = urlEncoder(this.notionUrl),
         siteUrl = null // TODO

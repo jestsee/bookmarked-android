@@ -1,6 +1,12 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.example.bookmarked_android.ui.screens.detail
 
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,16 +24,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -35,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.bookmarked_android.R
 import com.example.bookmarked_android.leftBorder
 import com.example.bookmarked_android.model.BookmarkDetail
@@ -44,36 +47,62 @@ import com.example.bookmarked_android.model.ImageContent
 import com.example.bookmarked_android.model.TextsContent
 import com.example.bookmarked_android.model.toBookmarkDetail
 import com.example.bookmarked_android.navigation.DetailScreenParams
+import com.example.bookmarked_android.navigation.Screen
 import com.example.bookmarked_android.ui.components.BookmarkTags
-import com.example.bookmarked_android.ui.components.ImageDialog
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
+import com.example.bookmarked_android.urlEncoder
 
 /**
  * Implementation
  */
 @Composable
-fun DetailScreen(
-    navController: NavController, pageId: String, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp
+fun SharedTransitionScope.DetailScreen(
+    navController: NavController,
+    pageId: String,
+    params: DetailScreenParams,
+    topPadding: Dp,
+    bottomPadding: Dp,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val viewModel: BookmarkDetailViewModel =
         viewModel(factory = remember { BookmarkDetailViewModelFactory(pageId) })
     val bookmarkDetailUiState = viewModel.bookmarkDetailUiState
 
-    DetailScreenUi(bookmarkDetailUiState, params, topPadding, bottomPadding)
+    DetailScreenUi(
+        bookmarkDetailUiState,
+        params,
+        topPadding,
+        bottomPadding,
+        animatedVisibilityScope,
+        navController
+    )
 }
 
 @Composable
-fun DetailScreenUi(
-    bookmarkDetailUiState: BookmarkDetailUiState, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp
+fun SharedTransitionScope.DetailScreenUi(
+    bookmarkDetailUiState: BookmarkDetailUiState,
+    params: DetailScreenParams,
+    topPadding: Dp,
+    bottomPadding: Dp,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    navController: NavController,
 ) {
     when (bookmarkDetailUiState) {
         is BookmarkDetailUiState.Error -> Text(text = "Error")
         is BookmarkDetailUiState.Loading -> Text(text = "Loading...")
         is BookmarkDetailUiState.Success -> {
-            Details(bookmarkDetailUiState.details, params, topPadding, bottomPadding)
+            Details(
+                bookmarkDetailUiState.details,
+                params,
+                topPadding,
+                bottomPadding,
+                animatedVisibilityScope,
+                navController
+            )
         }
+        else -> {}
     }
 }
 
@@ -81,11 +110,11 @@ fun DetailScreenUi(
  * UI Logics start here
  */
 @Composable
-private fun Details(
+private fun SharedTransitionScope.Details(
     details: List<BookmarkDetail>, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    navController: NavController,
 ) {
-    var selectedImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
-
     LazyColumn(
         modifier = Modifier.padding(
             HORIZONTAL_PADDING,
@@ -104,8 +133,12 @@ private fun Details(
             DetailItem(
                 detail = item,
                 isFirstItem = item == details.first(),
-                onImageClick = { imageUrl -> selectedImageUrl = imageUrl },
-                shouldDisplayAuthor = nextAuthorUsername == null || nextAuthorUsername != item.author.username
+                onImageClick = { imageUrl ->
+                    val encodedUrl = urlEncoder(imageUrl)
+                    navController.navigate("${Screen.IMAGE_DETAIL.name}/$encodedUrl")
+                },
+                shouldDisplayAuthor = nextAuthorUsername == null || nextAuthorUsername != item.author.username,
+                animatedVisibilityScope = animatedVisibilityScope
             )
         }
 
@@ -145,36 +178,36 @@ private fun Details(
         }
     }
 
-    if (selectedImageUrl != null) {
-        ImageDialog(url = selectedImageUrl!!, onDismissRequest = { selectedImageUrl = null })
-    }
-
 }
 
 @Composable
-private fun DetailItem(
+private fun SharedTransitionScope.DetailItem(
     detail: BookmarkDetail,
     isFirstItem: Boolean = false,
     shouldDisplayAuthor: Boolean = true,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         detail.contents.map {
             ContentItem(
                 content = it,
                 isFirstContentItem = isFirstItem && it == detail.contents.first(),
-                onImageClick = onImageClick
+                onImageClick = onImageClick,
+                animatedVisibilityScope = animatedVisibilityScope
             )
         }
         if (shouldDisplayAuthor) AuthorCard(detail.author)
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-private fun ContentItem(
+private fun SharedTransitionScope.ContentItem(
     content: Content,
     isFirstContentItem: Boolean,
     onImageClick: (String) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     if (content is TextsContent) {
         if (isFirstContentItem) {
@@ -190,16 +223,24 @@ private fun ContentItem(
     }
 
     if (content is ImageContent) {
+        val interactionSource = remember { MutableInteractionSource() }
         return AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current).data(content.url)
+                .placeholderMemoryCacheKey(content.url).memoryCacheKey(content.url)
+                .build(),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
                 .heightIn(0.dp, 240.dp)
                 .clip(RoundedCornerShape(8))
-                .pointerInput(Unit) {
-                    detectTapGestures(onTap = { onImageClick(content.url) })
-                },
-            model = content.url,
+                .clickable(interactionSource = interactionSource, indication = null) {
+                    onImageClick(content.url)
+                }
+                .sharedElement(
+                    state = rememberSharedContentState(key = content.url),
+                    animatedVisibilityScope = animatedVisibilityScope,
+//                    boundsTransform = { _, _ -> tween(durationMillis = 1000) }
+                ),
             contentDescription = "content image",
             contentScale = ContentScale.Crop,
             placeholder = ASYNC_IMAGE_PLACEHOLDER,
@@ -211,7 +252,11 @@ private fun ContentItem(
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Spacer(modifier = Modifier.width(0.dp))
-            DetailItem(detail = content.toBookmarkDetail(), onImageClick = onImageClick)
+            DetailItem(
+                detail = content.toBookmarkDetail(),
+                onImageClick = onImageClick,
+                animatedVisibilityScope = animatedVisibilityScope
+            )
         }
     }
 }

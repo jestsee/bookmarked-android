@@ -1,5 +1,9 @@
 package com.example.bookmarked_android.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,6 +24,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
+import com.example.bookmarked_android.ui.components.ImageDialog
 import com.example.bookmarked_android.ui.screens.HomeScreen
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarksScreen
@@ -28,15 +33,20 @@ import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.google.gson.Gson
 
 enum class Screen {
-    HOME, BOOKMARK_LIST, BOOKMARK_DETAIL,
+    HOME, BOOKMARK_LIST, BOOKMARK_DETAIL, IMAGE_DETAIL
 }
 
 sealed class NavigationItem(val route: String) {
     data object Home : NavigationItem(Screen.HOME.name)
     data object BookmarkList : NavigationItem(Screen.BOOKMARK_LIST.name)
-    data object BookmarkDetail : NavigationItem(Screen.BOOKMARK_DETAIL.name + "/{bookmarkId}/{params}")
+    data object BookmarkDetail :
+        NavigationItem(Screen.BOOKMARK_DETAIL.name + "/{bookmarkId}/{params}")
+
+    data object ImageDetail :
+        NavigationItem(Screen.IMAGE_DETAIL.name + "/{imageUrl}")
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NavigationHost(
     modifier: Modifier = Modifier,
@@ -76,38 +86,51 @@ fun NavigationHost(
                 selectedIndex
             ) { index -> selectedIndex = index }
         }) { innerPadding ->
-        NavHost(
-            modifier = modifier, navController = navController, startDestination = startDestination
-        ) {
-            composable(NavigationItem.Home.route) {
-                HomeScreen(
-                    navController = navController,
-                    topPadding = innerPadding.calculateTopPadding(),
-                    bottomPadding = BOTTOM_PADDING,
-                    viewModel = bookmarkListViewModel,
-                )
-            }
-            composable(NavigationItem.BookmarkList.route) {
-                BookmarksScreen(
-                    navController = navController,
-                    topPadding = innerPadding.calculateTopPadding(),
-                    bottomPadding = BOTTOM_PADDING,
-                    viewModel = bookmarkListViewModel
-                )
-            }
-            composable(NavigationItem.BookmarkDetail.route) { backStackEntry ->
-                val bookmarkId = backStackEntry.arguments?.getString("bookmarkId")
-                val params = backStackEntry.arguments?.getString("params")
+        SharedTransitionLayout {
+            NavHost(
+                modifier = modifier,
+                navController = navController,
+                startDestination = startDestination
+            ) {
+                composable(NavigationItem.Home.route) {
+                    HomeScreen(
+                        navController = navController,
+                        topPadding = innerPadding.calculateTopPadding(),
+                        bottomPadding = BOTTOM_PADDING,
+                        viewModel = bookmarkListViewModel,
+                    )
+                }
+                composable(NavigationItem.BookmarkList.route) {
+                    BookmarksScreen(
+                        navController = navController,
+                        topPadding = innerPadding.calculateTopPadding(),
+                        bottomPadding = BOTTOM_PADDING,
+                        viewModel = bookmarkListViewModel
+                    )
+                }
+                composable(NavigationItem.BookmarkDetail.route) { backStackEntry ->
+                    val bookmarkId = backStackEntry.arguments?.getString("bookmarkId")
+                    val params = backStackEntry.arguments?.getString("params")
 
-                val parsedParams = Gson().fromJson(params, DetailScreenParams::class.java)
+                    val parsedParams = Gson().fromJson(params, DetailScreenParams::class.java)
 
-                DetailScreen(
-                    navController = navController,
-                    topPadding = innerPadding.calculateTopPadding(),
-                    bottomPadding = BOTTOM_PADDING,
-                    pageId = bookmarkId!!,
-                    params = parsedParams
-                )
+                    DetailScreen(
+                        navController = navController,
+                        topPadding = innerPadding.calculateTopPadding(),
+                        bottomPadding = BOTTOM_PADDING,
+                        pageId = bookmarkId!!,
+                        params = parsedParams,
+                        animatedVisibilityScope = this
+                    )
+                }
+                composable(
+                    NavigationItem.ImageDetail.route,
+                    enterTransition = { EnterTransition.None },
+                    exitTransition = { ExitTransition.None }) {
+                    val imageUrl = it.arguments?.getString("imageUrl")
+
+                    ImageDialog(url = imageUrl!!, animatedVisibilityScope = this)
+                }
             }
         }
     }
