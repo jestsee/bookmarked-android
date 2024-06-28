@@ -47,7 +47,6 @@ fun ImageDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black)
-                .onSizeChanged { imageSize = it }
                 .graphicsLayer(
                     scaleX = maxOf(minScale, minOf(maxScale, scale)),
                     scaleY = maxOf(minScale, minOf(maxScale, scale)),
@@ -63,7 +62,7 @@ fun ImageDialog(
                             val maxY = (imageSize.height * (scale - 1)) / 2
 
                             offsetX = (offsetX + pan.x * scale).coerceIn(-maxX, maxX)
-                            //                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
+//                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
                             return@detectTransformGestures
                         }
                         offsetX = 0f
@@ -74,6 +73,7 @@ fun ImageDialog(
             AsyncImage(
                 modifier = Modifier
                     .align(Alignment.Center)
+                    .onSizeChanged { imageSize = it }
                     .combinedClickable(onDoubleClick = {
                         if (scale >= 2f) {
                             scale = 1f
