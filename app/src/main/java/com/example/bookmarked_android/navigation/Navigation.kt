@@ -8,6 +8,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,6 +24,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
 import com.example.bookmarked_android.ui.components.ImageDialog
 import com.example.bookmarked_android.ui.screens.HomeScreen
@@ -50,7 +53,7 @@ sealed class NavigationItem(val route: String) {
 @Composable
 fun NavigationHost(
     modifier: Modifier = Modifier,
-    navController: NavHostController,
+    navController: NavHostController = rememberNavController(),
     startDestination: String = NavigationItem.Home.route
 ) {
     val bottomBarHeight = 64.dp
@@ -75,7 +78,21 @@ fun NavigationHost(
     }
 
     val bookmarkListViewModel: BookmarkListViewModel = viewModel()
-    var selectedIndex by rememberSaveable { mutableStateOf<Int>(0) }
+    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+
+    /**
+     * Control bottom bar visibility
+     */
+    when (navBackStackEntry?.destination?.route) {
+        NavigationItem.ImageDetail.route -> {
+            showBottomBar.value = false
+        }
+        else -> {
+            showBottomBar.value = true
+        }
+    }
 
     Scaffold(
         Modifier.nestedScroll(nestedScrollConnection),
