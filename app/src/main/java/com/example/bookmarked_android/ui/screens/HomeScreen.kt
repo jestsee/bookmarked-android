@@ -19,7 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.bookmarked_android.Screen
+import com.example.bookmarked_android.navigation.DetailScreenParams
+import com.example.bookmarked_android.navigation.Screen
+import com.example.bookmarked_android.toJson
 import com.example.bookmarked_android.ui.components.RecentBookmarks
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListUiState
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
@@ -53,9 +55,9 @@ fun HomeScreen(
 //                    Spacer(modifier = Modifier.size(16.dp))
 
                     val onNavigateToDetail =
-                        { id: String, tags: String -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id/$tags") }
+                        { id: String, params: DetailScreenParams -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id/${params.toJson()}") }
                     RecentBookmarks(
-                        bookmarkedUiState.bookmarkList.items.take(7),
+                        bookmarkedUiState.bookmarkList.items.take(5),
                         onNavigateToDetail,
                     )
                 }

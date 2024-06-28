@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.bookmarked_android.Screen
+import com.example.bookmarked_android.navigation.Screen
 import com.example.bookmarked_android.toJson
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
