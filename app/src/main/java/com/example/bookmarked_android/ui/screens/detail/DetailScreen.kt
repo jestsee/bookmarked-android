@@ -145,9 +145,10 @@ private fun Details(
                         color = MaterialTheme.colorScheme.onBackground.copy(.75f),
                         letterSpacing = 1.sp
                     )
-                    Spacer(modifier = Modifier.size(8.dp))
+                    Spacer(modifier = Modifier.size(12.dp))
                     BookmarkTags(tags)
                 }
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
 
@@ -159,7 +160,7 @@ private fun Details(
                 color = MaterialTheme.colorScheme.onBackground.copy(.75f),
                 letterSpacing = 1.sp,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically

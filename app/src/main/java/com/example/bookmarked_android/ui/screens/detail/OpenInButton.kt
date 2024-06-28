@@ -1,6 +1,7 @@
 package com.example.bookmarked_android.ui.screens.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -16,7 +17,8 @@ fun OpenInButton(iconPainter: Int) {
     IconButton(
         onClick = { /*TODO*/ },
         Modifier
-            .background(Purple.copy(.15f), shape = RoundedCornerShape(30))
+            .background(Purple.copy(.15f), shape = RoundedCornerShape(20))
+            .padding(2.dp)
     ) {
         Icon(
             modifier = Modifier.size(24.dp),
