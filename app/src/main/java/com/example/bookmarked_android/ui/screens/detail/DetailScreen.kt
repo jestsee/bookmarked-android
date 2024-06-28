@@ -1,6 +1,5 @@
 package com.example.bookmarked_android.ui.screens.detail
 
-import android.content.res.Configuration
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,9 +29,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,64 +37,42 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.bookmarked_android.R
 import com.example.bookmarked_android.leftBorder
-import com.example.bookmarked_android.mock.mockBookmarTags
-import com.example.bookmarked_android.mock.mockBookmarkDetails
 import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.CalloutContent
 import com.example.bookmarked_android.model.Content
 import com.example.bookmarked_android.model.ImageContent
-import com.example.bookmarked_android.model.Tag
 import com.example.bookmarked_android.model.TextsContent
 import com.example.bookmarked_android.model.toBookmarkDetail
+import com.example.bookmarked_android.navigation.DetailScreenParams
 import com.example.bookmarked_android.ui.components.BookmarkTags
 import com.example.bookmarked_android.ui.components.ImageDialog
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
-import com.example.bookmarked_android.ui.theme.BookmarkedandroidTheme
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
-import com.google.gson.Gson
-
-/**
- * Preview
- */
-class DetailScreenPreviewParameterProvider : PreviewParameterProvider<List<BookmarkDetail>> {
-    override val values = sequenceOf(mockBookmarkDetails)
-}
-
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, heightDp = 2000)
-@Composable
-fun DetailScreenPreview(
-    @PreviewParameter(DetailScreenPreviewParameterProvider::class) bookmarks: List<BookmarkDetail>
-) {
-    BookmarkedandroidTheme {
-        DetailScreenUi(BookmarkDetailUiState.Success(bookmarks), mockBookmarTags, 0.dp, 0.dp)
-    }
-}
 
 /**
  * Implementation
  */
 @Composable
 fun DetailScreen(
-    navController: NavController, pageId: String, tags: String, topPadding: Dp, bottomPadding: Dp
+    navController: NavController, pageId: String, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp
 ) {
     val viewModel: BookmarkDetailViewModel =
         viewModel(factory = remember { BookmarkDetailViewModelFactory(pageId) })
     val bookmarkDetailUiState = viewModel.bookmarkDetailUiState
-    val parsedTags = Gson().fromJson(tags, Array<Tag>::class.java).toList()
 
-    DetailScreenUi(bookmarkDetailUiState, parsedTags, topPadding, bottomPadding)
+    DetailScreenUi(bookmarkDetailUiState, params, topPadding, bottomPadding)
 }
 
 @Composable
 fun DetailScreenUi(
-    bookmarkDetailUiState: BookmarkDetailUiState, tags: List<Tag>, topPadding: Dp, bottomPadding: Dp
+    bookmarkDetailUiState: BookmarkDetailUiState, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp
 ) {
     when (bookmarkDetailUiState) {
         is BookmarkDetailUiState.Error -> Text(text = "Error")
         is BookmarkDetailUiState.Loading -> Text(text = "Loading...")
         is BookmarkDetailUiState.Success -> {
-            Details(bookmarkDetailUiState.details, tags, topPadding, bottomPadding)
+            Details(bookmarkDetailUiState.details, params, topPadding, bottomPadding)
         }
     }
 }
@@ -108,7 +82,7 @@ fun DetailScreenUi(
  */
 @Composable
 private fun Details(
-    details: List<BookmarkDetail>, tags: List<Tag>, topPadding: Dp, bottomPadding: Dp,
+    details: List<BookmarkDetail>, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp,
 ) {
     var selectedImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -135,7 +109,7 @@ private fun Details(
             )
         }
 
-        if (tags.isNotEmpty()) {
+        if (params.tags.isNotEmpty()) {
             item {
                 Column {
                     Text(
@@ -146,7 +120,7 @@ private fun Details(
                         letterSpacing = 1.sp
                     )
                     Spacer(modifier = Modifier.size(12.dp))
-                    BookmarkTags(tags)
+                    BookmarkTags(params.tags)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -165,8 +139,8 @@ private fun Details(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OpenInButton(iconPainter = R.drawable.icon_x)
-                OpenInButton(iconPainter = R.drawable.icon_notion)
+                OpenInButton(R.drawable.icon_x, "X", params.tweetUrl)
+                OpenInButton(R.drawable.icon_notion, "Notion", params.notionUrl)
             }
         }
     }

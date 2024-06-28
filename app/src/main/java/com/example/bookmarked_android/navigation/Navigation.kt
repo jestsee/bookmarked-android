@@ -1,4 +1,4 @@
-package com.example.bookmarked_android
+package com.example.bookmarked_android.navigation
 
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -20,11 +20,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
+import com.example.bookmarked_android.ui.screens.HomeScreen
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarksScreen
 import com.example.bookmarked_android.ui.screens.detail.DetailScreen
-import com.example.bookmarked_android.ui.screens.HomeScreen
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
+import com.google.gson.Gson
 
 enum class Screen {
     HOME, BOOKMARK_LIST, BOOKMARK_DETAIL,
@@ -33,7 +34,7 @@ enum class Screen {
 sealed class NavigationItem(val route: String) {
     data object Home : NavigationItem(Screen.HOME.name)
     data object BookmarkList : NavigationItem(Screen.BOOKMARK_LIST.name)
-    data object BookmarkDetail : NavigationItem(Screen.BOOKMARK_DETAIL.name + "/{bookmarkId}/{tags}")
+    data object BookmarkDetail : NavigationItem(Screen.BOOKMARK_DETAIL.name + "/{bookmarkId}/{params}")
 }
 
 @Composable
@@ -96,14 +97,16 @@ fun NavigationHost(
             }
             composable(NavigationItem.BookmarkDetail.route) { backStackEntry ->
                 val bookmarkId = backStackEntry.arguments?.getString("bookmarkId")
-                val tags = backStackEntry.arguments?.getString("tags")
+                val params = backStackEntry.arguments?.getString("params")
+
+                val parsedParams = Gson().fromJson(params, DetailScreenParams::class.java)
 
                 DetailScreen(
                     navController = navController,
                     topPadding = innerPadding.calculateTopPadding(),
                     bottomPadding = BOTTOM_PADDING,
                     pageId = bookmarkId!!,
-                    tags = tags!!
+                    params = parsedParams
                 )
             }
         }

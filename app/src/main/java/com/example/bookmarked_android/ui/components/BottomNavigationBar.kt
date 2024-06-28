@@ -25,7 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.bookmarked_android.R
-import com.example.bookmarked_android.Screen
+import com.example.bookmarked_android.navigation.Screen
 import com.example.bookmarked_android.data.BottomNavigationItem
 import com.example.bookmarked_android.ui.theme.Primary
 

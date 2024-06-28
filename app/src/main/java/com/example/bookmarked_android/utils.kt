@@ -11,8 +11,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.bookmarked_android.model.Tag
+import com.example.bookmarked_android.navigation.DetailScreenParams
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 fun String.maxCharacters(max: Int): String {
     return if (this.length <= max) this
@@ -23,6 +26,19 @@ fun List<Tag>.toJson(): String {
     val bookmarkTagsListType = object : TypeToken<List<Tag>>() {}.type
     val jsonTags = Gson().toJson(this, bookmarkTagsListType)
     return jsonTags
+}
+
+private fun urlEncoder(url: String): String {
+    return URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
+}
+
+fun DetailScreenParams.toJson(): String {
+    val encoded = this.copy(
+        tweetUrl = urlEncoder(this.tweetUrl),
+        notionUrl = urlEncoder(this.notionUrl),
+        siteUrl = null // TODO
+    )
+    return Gson().toJson(encoded, DetailScreenParams::class.java)
 }
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
