@@ -7,6 +7,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -69,6 +70,8 @@ fun SharedTransitionScope.ImageDialog(
                 }
             },
     ) {
+        val interactionSource = remember { MutableInteractionSource() }
+
         AsyncImage(model = ImageRequest.Builder(LocalContext.current).data(url)
             .placeholderMemoryCacheKey(url).memoryCacheKey(url).build(),
             modifier = Modifier
@@ -88,7 +91,7 @@ fun SharedTransitionScope.ImageDialog(
                         return@combinedClickable
                     }
                     scale = 2f
-                }) {},
+                }, interactionSource = interactionSource, indication = null) {},
             contentDescription = "Content image",
             contentScale = ContentScale.FillWidth,
             placeholder = ASYNC_IMAGE_PLACEHOLDER
