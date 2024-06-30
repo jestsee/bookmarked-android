@@ -9,6 +9,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
@@ -38,13 +39,11 @@ fun SharedTransitionScope.BookmarksScreen(
         is BookmarkListUiState.Loading -> Text(text = "Loading...")
         is BookmarkListUiState.Success -> {
             LazyColumn(
-                modifier = Modifier.fillMaxHeight(),
+                modifier = Modifier.fillMaxHeight().padding(top = topPadding),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(
-                    HORIZONTAL_PADDING,
-                    topPadding,
-                    HORIZONTAL_PADDING,
-                    bottomPadding
+                    horizontal = HORIZONTAL_PADDING,
+                    vertical = bottomPadding,
                 )
             ) {
 

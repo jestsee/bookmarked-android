@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,12 +22,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,11 +58,13 @@ import com.example.bookmarked_android.model.toBookmarkDetail
 import com.example.bookmarked_android.navigation.DetailScreenParams
 import com.example.bookmarked_android.navigation.Screen
 import com.example.bookmarked_android.ui.components.BookmarkTags
+import com.example.bookmarked_android.ui.components.ScrollToTop
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
 import com.example.bookmarked_android.urlDecoder
 import com.example.bookmarked_android.urlEncoder
+import kotlinx.coroutines.launch
 
 /**
  * Implementation
@@ -68,20 +76,48 @@ fun SharedTransitionScope.DetailScreen(
     params: DetailScreenParams,
     topPadding: Dp,
     bottomPadding: Dp,
+    showScrollToTopButton: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val viewModel: BookmarkDetailViewModel =
         viewModel(factory = remember { BookmarkDetailViewModelFactory(pageId) })
     val bookmarkDetailUiState = viewModel.bookmarkDetailUiState
 
-    Details(
-        bookmarkDetailUiState,
-        params,
-        topPadding,
-        bottomPadding,
-        animatedVisibilityScope,
-        navController
-    )
+    val scrollState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val isAtTop by remember {
+        derivedStateOf {
+            scrollState.firstVisibleItemIndex == 0 && scrollState.firstVisibleItemScrollOffset == 0
+        }
+    }
+
+    Box(
+        modifier = Modifier.padding(
+            HORIZONTAL_PADDING,
+            topPadding,
+            HORIZONTAL_PADDING,
+        ),
+    ) {
+        Details(
+            bookmarkDetailUiState,
+            params,
+            topPadding,
+            bottomPadding,
+            animatedVisibilityScope,
+            navController,
+            scrollState
+        )
+        ScrollToTop(
+            modifier = Modifier.align(Alignment.BottomEnd),
+            buttonModifier = Modifier.padding(bottom = bottomPadding * 1.5f),
+            visible = showScrollToTopButton && !isAtTop,
+            onClick = {
+                coroutineScope.launch {
+                    scrollState.animateScrollToItem(index = 0)
+                }
+            }
+        )
+    }
 }
 
 /**
@@ -92,13 +128,10 @@ private fun SharedTransitionScope.Details(
     state: BookmarkDetailUiState, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp,
     animatedVisibilityScope: AnimatedVisibilityScope,
     navController: NavController,
+    scrollState: LazyListState
 ) {
     LazyColumn(
-        modifier = Modifier.padding(
-            HORIZONTAL_PADDING,
-            topPadding,
-            HORIZONTAL_PADDING,
-        ),
+        state = scrollState,
         contentPadding = PaddingValues(
             top = 32.dp, bottom = bottomPadding
         ),

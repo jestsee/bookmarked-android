@@ -33,10 +33,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
 import com.example.bookmarked_android.ui.components.ImageDialog
-import com.example.bookmarked_android.ui.screens.home.HomeScreen
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarksScreen
 import com.example.bookmarked_android.ui.screens.detail.DetailScreen
+import com.example.bookmarked_android.ui.screens.home.HomeScreen
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.google.gson.Gson
 
@@ -148,6 +148,7 @@ fun NavigationHost(
                         bottomPadding = BOTTOM_PADDING,
                         pageId = bookmarkId!!,
                         params = parsedParams,
+                        showScrollToTopButton = showBottomBar.value,
                         animatedVisibilityScope = this
                     )
                 }
