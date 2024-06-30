@@ -20,14 +20,15 @@ fun String.maxCharacters(max: Int): String {
 }
 
 const val PERCENT = "|percent-symbol|"
+const val PLUS = "|plus-symbol|"
 
 fun urlEncoder(url: String): String {
-    val replacedUrl = url.replace("%", PERCENT)
+    val replacedUrl = url.replace("%", PERCENT).replace("+", PLUS)
     return URLEncoder.encode(replacedUrl, StandardCharsets.UTF_8.toString())
 }
 fun urlDecoder(url: String): String {
     val decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.toString())
-    return decodedUrl.replace(PERCENT, "%")
+    return decodedUrl.replace(PERCENT, "%").replace(PLUS, "+")
 }
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
