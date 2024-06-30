@@ -10,10 +10,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.bookmarked_android.model.Tag
-import com.example.bookmarked_android.navigation.DetailScreenParams
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -22,24 +19,15 @@ fun String.maxCharacters(max: Int): String {
     else this.take(max - 3).plus("...")
 }
 
-fun List<Tag>.toJson(): String {
-    val bookmarkTagsListType = object : TypeToken<List<Tag>>() {}.type
-    val jsonTags = Gson().toJson(this, bookmarkTagsListType)
-    return jsonTags
-}
+const val PERCENT = "|percent-symbol|"
 
 fun urlEncoder(url: String): String {
-    return URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
+    val replacedUrl = url.replace("%", PERCENT)
+    return URLEncoder.encode(replacedUrl, StandardCharsets.UTF_8.toString())
 }
-
-fun DetailScreenParams.toJson(): String {
-    val encoded = this.copy(
-        title = urlEncoder(this.title),
-        tweetUrl = urlEncoder(this.tweetUrl),
-        notionUrl = urlEncoder(this.notionUrl),
-        siteUrl = null // TODO
-    )
-    return Gson().toJson(encoded, DetailScreenParams::class.java)
+fun urlDecoder(url: String): String {
+    val decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.toString())
+    return decodedUrl.replace(PERCENT, "%")
 }
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
