@@ -84,32 +84,6 @@ fun SharedTransitionScope.DetailScreen(
     )
 }
 
-//@Composable
-//fun SharedTransitionScope.DetailScreenUi(
-//    bookmarkDetailUiState: BookmarkDetailUiState,
-//    params: DetailScreenParams,
-//    topPadding: Dp,
-//    bottomPadding: Dp,
-//    animatedVisibilityScope: AnimatedVisibilityScope,
-//    navController: NavController,
-//) {
-//    when (bookmarkDetailUiState) {
-//        is BookmarkDetailUiState.Error -> Text(text = "Error")
-//        is BookmarkDetailUiState.Loading -> Text(text = "Loading...")
-//        is BookmarkDetailUiState.Success -> {
-//            Details(
-//                bookmarkDetailUiState.details,
-//                params,
-//                topPadding,
-//                bottomPadding,
-//                animatedVisibilityScope,
-//                navController
-//            )
-//        }
-//        else -> {}
-//    }
-//}
-
 /**
  * UI Logics start here
  */
@@ -196,7 +170,7 @@ private fun SharedTransitionScope.Details(
                         letterSpacing = 1.sp
                     )
                     Spacer(modifier = Modifier.size(12.dp))
-                    BookmarkTags(params.tags)
+                    BookmarkTags(params.tags, animatedVisibilityScope)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
@@ -283,7 +257,6 @@ private fun SharedTransitionScope.ContentItem(
                 .sharedElement(
                     state = rememberSharedContentState(key = content.url),
                     animatedVisibilityScope = animatedVisibilityScope,
-//                    boundsTransform = { _, _ -> tween(durationMillis = 1000) }
                 ),
             contentDescription = "content image",
             contentScale = ContentScale.Crop,
