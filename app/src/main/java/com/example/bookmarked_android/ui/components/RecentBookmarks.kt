@@ -94,12 +94,6 @@ fun SharedTransitionScope.RecentBookmarks(
         }
 
     }
-
-    if (pressedBookmarkId != null) {
-        BookmarkDialog(
-            bookmark = bookmarks.first { it.id == pressedBookmarkId },
-            onDismissRequest = { pressedBookmarkId = null })
-    }
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -148,17 +142,13 @@ fun SharedTransitionScope.RecentBookmarkItem(
                     animatedVisibilityScope = animatedVisibilityScope,
                     enter = fadeIn(),
                     exit = fadeOut(),
-//                    resizeMode = SharedTransitionScope.ResizeMode.ScaleToBounds()
                 )
             )
             Spacer(modifier = Modifier.size(24.dp))
-            BookmarkTags(tags = item.tags)
+            BookmarkTags(tags = item.tags, animatedVisibilityScope)
         }
         IconButton(
             modifier = Modifier
-//                .padding(end = 1.5.dp, top = 1.5.dp)
-//                .background(Primary, shape = CircleShape)
-//                .padding(2.dp)
                 .size(36.dp)
                 .align(Alignment.TopEnd),
             onClick = {
