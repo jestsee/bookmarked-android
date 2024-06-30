@@ -130,6 +130,34 @@ private fun SharedTransitionScope.Details(
         ),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
+        /**
+         * Title
+         */
+        item {
+            DetailTexts(
+                modifier = Modifier
+                    .sharedBounds(
+                        rememberSharedContentState(
+                            key = "title-${params.id}"
+                        ),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        enter = fadeIn(),
+                        exit = fadeOut(),
+                    )
+                    .skipToLookaheadSize(),
+                isTitle = true,
+                content = TextsContent(
+                    texts = listOf(
+                        TextContent(
+                            id = "content-title",
+                            text = urlDecoder(params.title),
+                            url = null
+                        )
+                    )
+                )
+            )
+        }
+
         if (state is BookmarkDetailUiState.Success) {
             itemsIndexed(state.details) { _, item ->
                 val nextItem = state.details.getOrNull(state.details.indexOf(item) + 1)
@@ -137,7 +165,6 @@ private fun SharedTransitionScope.Details(
 
                 DetailItem(
                     detail = item,
-                    isFirstItem = item == state.details.first(),
                     onImageClick = { imageUrl ->
                         val encodedUrl = urlEncoder(imageUrl)
                         navController.navigate("${Screen.IMAGE_DETAIL.name}/$encodedUrl")
@@ -149,30 +176,6 @@ private fun SharedTransitionScope.Details(
         }
 
         if (state is BookmarkDetailUiState.Loading) {
-            item {
-                DetailTexts(
-                    modifier = Modifier
-                        .sharedBounds(
-                            rememberSharedContentState(
-                                key = "title-${params.id}"
-                            ),
-                            animatedVisibilityScope = animatedVisibilityScope,
-                            enter = fadeIn(),
-                            exit = fadeOut(),
-                        )
-                        .skipToLookaheadSize(),
-                    isTitle = true,
-                    content = TextsContent(
-                        texts = listOf(
-                            TextContent(
-                                id = "content-title",
-                                text = urlDecoder(params.title),
-                                url = null
-                            )
-                        )
-                    )
-                )
-            }
             item {
                 DetailLoading()
             }
@@ -224,7 +227,7 @@ private fun SharedTransitionScope.Details(
 @Composable
 private fun SharedTransitionScope.DetailItem(
     detail: BookmarkDetail,
-    isFirstItem: Boolean = false,
+    isFirstItem: Boolean = false, // TODO remove
     shouldDisplayAuthor: Boolean = true,
     onImageClick: (String) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope
@@ -233,7 +236,7 @@ private fun SharedTransitionScope.DetailItem(
         detail.contents.map {
             ContentItem(
                 content = it,
-                isFirstContentItem = isFirstItem && it == detail.contents.first(),
+                isFirstContentItem = isFirstItem && it == detail.contents.first(), // TODO remove
                 onImageClick = onImageClick,
                 animatedVisibilityScope = animatedVisibilityScope
             )
@@ -246,12 +249,12 @@ private fun SharedTransitionScope.DetailItem(
 @Composable
 private fun SharedTransitionScope.ContentItem(
     content: Content,
-    isFirstContentItem: Boolean,
+    isFirstContentItem: Boolean, // TODO remove
     onImageClick: (String) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     if (content is TextsContent) {
-        if (isFirstContentItem) {
+        if (isFirstContentItem) { // TODO move the logic to viewModel
             // separate the content with its title
             val title = TextsContent(texts = arrayListOf(content.texts.first()))
             DetailTexts(content = title, isTitle = true)
