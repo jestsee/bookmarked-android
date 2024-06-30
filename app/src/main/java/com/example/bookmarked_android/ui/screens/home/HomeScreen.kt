@@ -1,5 +1,10 @@
-package com.example.bookmarked_android.ui.screens
+@file:OptIn(ExperimentalSharedTransitionApi::class)
 
+package com.example.bookmarked_android.ui.screens.home
+
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,18 +26,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.navigation.DetailScreenParams
 import com.example.bookmarked_android.navigation.Screen
-import com.example.bookmarked_android.toJson
+import com.example.bookmarked_android.navigation.toJson
 import com.example.bookmarked_android.ui.components.RecentBookmarks
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListUiState
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
 @Composable
-fun HomeScreen(
+fun SharedTransitionScope.HomeScreen(
     navController: NavController,
     viewModel: BookmarkListViewModel = viewModel(),
     topPadding: Dp,
-    bottomPadding: Dp
+    bottomPadding: Dp,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val bookmarkedUiState = viewModel.bookmarkListUiState
 
@@ -59,6 +65,7 @@ fun HomeScreen(
                     RecentBookmarks(
                         bookmarkedUiState.bookmarkList.items.take(5),
                         onNavigateToDetail,
+                        animatedVisibilityScope
                     )
                 }
             }

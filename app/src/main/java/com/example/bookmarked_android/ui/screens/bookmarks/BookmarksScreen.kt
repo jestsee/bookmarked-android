@@ -1,5 +1,10 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.example.bookmarked_android.ui.screens.bookmarks
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,16 +21,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.navigation.DetailScreenParams
 import com.example.bookmarked_android.navigation.Screen
-import com.example.bookmarked_android.toJson
+import com.example.bookmarked_android.navigation.toJson
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
 @Composable
-fun BookmarksScreen(
+fun SharedTransitionScope.BookmarksScreen(
     navController: NavController,
     viewModel: BookmarkListViewModel = viewModel(),
     topPadding: Dp,
-    bottomPadding: Dp
+    bottomPadding: Dp,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     when (val bookmarkedUiState = viewModel.bookmarkListUiState) {
         is BookmarkListUiState.Error -> Text(text = "Error")
@@ -34,28 +40,37 @@ fun BookmarksScreen(
             LazyColumn(
                 modifier = Modifier.fillMaxHeight(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(HORIZONTAL_PADDING, topPadding, HORIZONTAL_PADDING, bottomPadding)
+                contentPadding = PaddingValues(
+                    HORIZONTAL_PADDING,
+                    topPadding,
+                    HORIZONTAL_PADDING,
+                    bottomPadding
+                )
             ) {
 
                 items(bookmarkedUiState.bookmarkList.items) { item ->
                     val onNavigateToDetail =
                         { id: String, params: DetailScreenParams -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id/${params.toJson()}") }
-                    RecentBookmarkItem(item = item, modifier = Modifier.pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = {
-                                onNavigateToDetail(
-                                    item.id,
-                                    DetailScreenParams(
-                                        item.title,
-                                        item.tags,
-                                        item.tweetUrl,
-                                        item.notionUrl,
-                                        item.publicUrl
+                    RecentBookmarkItem(
+                        item = item,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        modifier = Modifier.pointerInput(Unit) {
+                            detectTapGestures(
+                                onTap = {
+                                    onNavigateToDetail(
+                                        item.id,
+                                        DetailScreenParams(
+                                            item.id,
+                                            item.title,
+                                            item.tags,
+                                            item.tweetUrl,
+                                            item.notionUrl,
+                                            item.publicUrl
+                                        )
                                     )
-                                )
-                            }
-                        )
-                    })
+                                }
+                            )
+                        })
                 }
             }
         }

@@ -1,5 +1,10 @@
 package com.example.bookmarked_android.ui.components
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,10 +43,12 @@ import com.example.bookmarked_android.navigation.DetailScreenParams
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RecentBookmarks(
+fun SharedTransitionScope.RecentBookmarks(
     bookmarks: List<BookmarkItem>,
     onNavigateToDetail: (String, DetailScreenParams) -> Unit,
+    animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     var pressedBookmarkId by rememberSaveable { mutableStateOf<String?>(null) }
     val haptics = LocalHapticFeedback.current
@@ -62,6 +70,7 @@ fun RecentBookmarks(
                             onNavigateToDetail(
                                 bookmark.id,
                                 DetailScreenParams(
+                                    bookmark.id,
                                     bookmark.title,
                                     bookmark.tags,
                                     bookmark.tweetUrl,
@@ -79,7 +88,8 @@ fun RecentBookmarks(
                             pressedBookmarkId = null
                         },
                     )
-                }
+                },
+                animatedVisibilityScope = animatedVisibilityScope
             )
         }
 
@@ -92,8 +102,13 @@ fun RecentBookmarks(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun RecentBookmarkItem(item: BookmarkItem, modifier: Modifier) {
+fun SharedTransitionScope.RecentBookmarkItem(
+    item: BookmarkItem,
+    modifier: Modifier,
+    animatedVisibilityScope: AnimatedVisibilityScope
+) {
     val uriHandler = LocalUriHandler.current
 
     Box(Modifier.fillMaxWidth()) {
@@ -123,7 +138,19 @@ fun RecentBookmarkItem(item: BookmarkItem, modifier: Modifier) {
                 }
             }
             Spacer(modifier = Modifier.size(8.dp))
-            Text(text = item.title, maxLines = 4, overflow = TextOverflow.Ellipsis)
+            Text(
+                text = item.title,
+                maxLines = 4, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.wrapContentWidth().sharedBounds(
+                    rememberSharedContentState(
+                        key = "title-${item.id}"
+                    ),
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+//                    resizeMode = SharedTransitionScope.ResizeMode.ScaleToBounds()
+                )
+            )
             Spacer(modifier = Modifier.size(24.dp))
             BookmarkTags(tags = item.tags)
         }

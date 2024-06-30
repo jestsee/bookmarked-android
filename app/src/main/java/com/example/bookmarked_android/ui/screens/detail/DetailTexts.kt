@@ -3,6 +3,7 @@ package com.example.bookmarked_android.ui.screens.detail
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
@@ -15,7 +16,7 @@ import com.example.bookmarked_android.ui.theme.Purple
 import com.example.bookmarked_android.ui.theme.jetbrainsMonofontFamily
 
 @Composable
-fun DetailTexts(content: TextsContent, isTitle: Boolean = false) {
+fun DetailTexts(content: TextsContent, isTitle: Boolean = false, modifier: Modifier = Modifier) {
     val uriHandler = LocalUriHandler.current
     val spanStyle = SpanStyle(
         fontFamily = jetbrainsMonofontFamily,
@@ -54,7 +55,9 @@ fun DetailTexts(content: TextsContent, isTitle: Boolean = false) {
         }
     }
 
-    ClickableText(style = TextStyle(color = MaterialTheme.colorScheme.onBackground).copy(lineHeight = if (isTitle) 32.sp else 26.sp),
+    ClickableText(
+        modifier = modifier,
+        style = TextStyle(color = MaterialTheme.colorScheme.onBackground).copy(lineHeight = if (isTitle) 32.sp else 26.sp),
         text = annotatedText,
         onClick = { offset ->
             annotatedText.getStringAnnotations(

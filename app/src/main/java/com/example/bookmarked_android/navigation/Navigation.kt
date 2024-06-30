@@ -4,6 +4,11 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +33,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.bookmarked_android.ui.components.BottomNavigationBar
 import com.example.bookmarked_android.ui.components.ImageDialog
-import com.example.bookmarked_android.ui.screens.HomeScreen
+import com.example.bookmarked_android.ui.screens.home.HomeScreen
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarksScreen
 import com.example.bookmarked_android.ui.screens.detail.DetailScreen
@@ -105,9 +110,13 @@ fun NavigationHost(
         }) { innerPadding ->
         SharedTransitionLayout {
             NavHost(
-                modifier = modifier,
+                modifier = modifier.fillMaxSize(),
                 navController = navController,
-                startDestination = startDestination
+                startDestination = startDestination,
+                enterTransition = { slideInHorizontally { it } + fadeIn() },
+                exitTransition = { slideOutHorizontally { -it } + fadeOut() },
+                popEnterTransition = { slideInHorizontally { -it } + fadeIn() },
+                popExitTransition = { slideOutHorizontally { it } + fadeOut() },
             ) {
                 composable(NavigationItem.Home.route) {
                     HomeScreen(
@@ -115,6 +124,7 @@ fun NavigationHost(
                         topPadding = innerPadding.calculateTopPadding(),
                         bottomPadding = BOTTOM_PADDING,
                         viewModel = bookmarkListViewModel,
+                        animatedVisibilityScope = this
                     )
                 }
                 composable(NavigationItem.BookmarkList.route) {
@@ -122,7 +132,8 @@ fun NavigationHost(
                         navController = navController,
                         topPadding = innerPadding.calculateTopPadding(),
                         bottomPadding = BOTTOM_PADDING,
-                        viewModel = bookmarkListViewModel
+                        viewModel = bookmarkListViewModel,
+                        animatedVisibilityScope = this
                     )
                 }
                 composable(NavigationItem.BookmarkDetail.route) { backStackEntry ->

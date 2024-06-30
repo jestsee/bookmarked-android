@@ -1,5 +1,6 @@
 package com.example.bookmarked_android.ui.screens.bookmarks
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -24,7 +25,7 @@ class BookmarkListViewModel() : ViewModel() {
         getBookmarks()
     }
 
-    fun getBookmarks() {
+    private fun getBookmarks() {
         viewModelScope.launch {
             bookmarkListUiState = try {
                 val config = Config()
@@ -35,6 +36,7 @@ class BookmarkListViewModel() : ViewModel() {
                     )
                 BookmarkListUiState.Success(BookmarkList(items = listResult))
             } catch (e: Exception) {
+                Log.d("TAG", "getBookmarks: $e")
                 BookmarkListUiState.Error
             }
         }

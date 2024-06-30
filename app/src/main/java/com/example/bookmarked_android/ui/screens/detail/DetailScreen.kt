@@ -5,6 +5,8 @@ package com.example.bookmarked_android.ui.screens.detail
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +46,7 @@ import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.CalloutContent
 import com.example.bookmarked_android.model.Content
 import com.example.bookmarked_android.model.ImageContent
+import com.example.bookmarked_android.model.TextContent
 import com.example.bookmarked_android.model.TextsContent
 import com.example.bookmarked_android.model.toBookmarkDetail
 import com.example.bookmarked_android.navigation.DetailScreenParams
@@ -52,6 +55,7 @@ import com.example.bookmarked_android.ui.components.BookmarkTags
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
+import com.example.bookmarked_android.urlDecoder
 import com.example.bookmarked_android.urlEncoder
 
 /**
@@ -70,7 +74,7 @@ fun SharedTransitionScope.DetailScreen(
         viewModel(factory = remember { BookmarkDetailViewModelFactory(pageId) })
     val bookmarkDetailUiState = viewModel.bookmarkDetailUiState
 
-    DetailScreenUi(
+    Details(
         bookmarkDetailUiState,
         params,
         topPadding,
@@ -80,38 +84,38 @@ fun SharedTransitionScope.DetailScreen(
     )
 }
 
-@Composable
-fun SharedTransitionScope.DetailScreenUi(
-    bookmarkDetailUiState: BookmarkDetailUiState,
-    params: DetailScreenParams,
-    topPadding: Dp,
-    bottomPadding: Dp,
-    animatedVisibilityScope: AnimatedVisibilityScope,
-    navController: NavController,
-) {
-    when (bookmarkDetailUiState) {
-        is BookmarkDetailUiState.Error -> Text(text = "Error")
-        is BookmarkDetailUiState.Loading -> Text(text = "Loading...")
-        is BookmarkDetailUiState.Success -> {
-            Details(
-                bookmarkDetailUiState.details,
-                params,
-                topPadding,
-                bottomPadding,
-                animatedVisibilityScope,
-                navController
-            )
-        }
-        else -> {}
-    }
-}
+//@Composable
+//fun SharedTransitionScope.DetailScreenUi(
+//    bookmarkDetailUiState: BookmarkDetailUiState,
+//    params: DetailScreenParams,
+//    topPadding: Dp,
+//    bottomPadding: Dp,
+//    animatedVisibilityScope: AnimatedVisibilityScope,
+//    navController: NavController,
+//) {
+//    when (bookmarkDetailUiState) {
+//        is BookmarkDetailUiState.Error -> Text(text = "Error")
+//        is BookmarkDetailUiState.Loading -> Text(text = "Loading...")
+//        is BookmarkDetailUiState.Success -> {
+//            Details(
+//                bookmarkDetailUiState.details,
+//                params,
+//                topPadding,
+//                bottomPadding,
+//                animatedVisibilityScope,
+//                navController
+//            )
+//        }
+//        else -> {}
+//    }
+//}
 
 /**
  * UI Logics start here
  */
 @Composable
 private fun SharedTransitionScope.Details(
-    details: List<BookmarkDetail>, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp,
+    state: BookmarkDetailUiState, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp,
     animatedVisibilityScope: AnimatedVisibilityScope,
     navController: NavController,
 ) {
@@ -126,20 +130,56 @@ private fun SharedTransitionScope.Details(
         ),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
-        itemsIndexed(details) { _, item ->
-            val nextItem = details.getOrNull(details.indexOf(item) + 1)
-            val nextAuthorUsername = nextItem?.author?.username
+        if (state is BookmarkDetailUiState.Success) {
+            itemsIndexed(state.details) { _, item ->
+                val nextItem = state.details.getOrNull(state.details.indexOf(item) + 1)
+                val nextAuthorUsername = nextItem?.author?.username
 
-            DetailItem(
-                detail = item,
-                isFirstItem = item == details.first(),
-                onImageClick = { imageUrl ->
-                    val encodedUrl = urlEncoder(imageUrl)
-                    navController.navigate("${Screen.IMAGE_DETAIL.name}/$encodedUrl")
-                },
-                shouldDisplayAuthor = nextAuthorUsername == null || nextAuthorUsername != item.author.username,
-                animatedVisibilityScope = animatedVisibilityScope
-            )
+                DetailItem(
+                    detail = item,
+                    isFirstItem = item == state.details.first(),
+                    onImageClick = { imageUrl ->
+                        val encodedUrl = urlEncoder(imageUrl)
+                        navController.navigate("${Screen.IMAGE_DETAIL.name}/$encodedUrl")
+                    },
+                    shouldDisplayAuthor = nextAuthorUsername == null || nextAuthorUsername != item.author.username,
+                    animatedVisibilityScope = animatedVisibilityScope
+                )
+            }
+        }
+
+        if (state is BookmarkDetailUiState.Loading) {
+            item {
+                DetailTexts(
+                    modifier = Modifier
+                        .sharedBounds(
+                            rememberSharedContentState(
+                                key = "title-${params.id}"
+                            ),
+                            animatedVisibilityScope = animatedVisibilityScope,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        )
+                        .skipToLookaheadSize(),
+                    isTitle = true,
+                    content = TextsContent(
+                        texts = listOf(
+                            TextContent(
+                                id = "content-title",
+                                text = urlDecoder(params.title),
+                                url = null
+                            )
+                        )
+                    )
+                )
+            }
+            item {
+                DetailLoading()
+            }
+        }
+
+        if (state is BookmarkDetailUiState.Error) {
+            // TODO navigate to error screen
         }
 
         if (params.tags.isNotEmpty()) {
@@ -180,6 +220,7 @@ private fun SharedTransitionScope.Details(
 
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun SharedTransitionScope.DetailItem(
     detail: BookmarkDetail,
