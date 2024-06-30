@@ -145,7 +145,7 @@ fun SharedTransitionScope.RecentBookmarkItem(
                 )
             )
             Spacer(modifier = Modifier.size(24.dp))
-            BookmarkTags(tags = item.tags, animatedVisibilityScope)
+            BookmarkTags(tags = item.tags, item.id, animatedVisibilityScope)
         }
         IconButton(
             modifier = Modifier

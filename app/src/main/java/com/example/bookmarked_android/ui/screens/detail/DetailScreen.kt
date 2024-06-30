@@ -203,7 +203,7 @@ private fun SharedTransitionScope.Details(
                         letterSpacing = 1.sp
                     )
                     Spacer(modifier = Modifier.size(12.dp))
-                    BookmarkTags(params.tags, animatedVisibilityScope)
+                    BookmarkTags(params.tags, params.id, animatedVisibilityScope)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }
