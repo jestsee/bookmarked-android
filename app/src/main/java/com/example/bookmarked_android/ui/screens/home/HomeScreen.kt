@@ -63,7 +63,7 @@ fun SharedTransitionScope.HomeScreen(
                     val onNavigateToDetail =
                         { id: String, params: DetailScreenParams -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id/${params.toJson()}") }
                     RecentBookmarks(
-                        bookmarkedUiState.bookmarkList.items.take(5),
+                        bookmarkedUiState.bookmarkList.take(5),
                         onNavigateToDetail,
                         animatedVisibilityScope
                     )

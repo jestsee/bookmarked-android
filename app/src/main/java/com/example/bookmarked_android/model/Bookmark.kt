@@ -5,8 +5,10 @@ import com.google.gson.annotations.SerializedName
 
 
 @Immutable
-data class BookmarkList(
-    val items: List<BookmarkItem>,
+data class BookmarkListResponse(
+    val results: List<BookmarkItem>,
+    val nextCursor: String?,
+    val hasMore: Boolean = false
 )
 
 @Immutable
