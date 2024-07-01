@@ -25,8 +25,9 @@ class BookmarkListViewModel() : ViewModel() {
         getBookmarks()
     }
 
-    private fun getBookmarks() {
+    fun getBookmarks() {
         viewModelScope.launch {
+            bookmarkListUiState = BookmarkListUiState.Loading
             bookmarkListUiState = try {
                 val config = Config()
                 val listResult =
@@ -34,6 +35,7 @@ class BookmarkListViewModel() : ViewModel() {
                         "Bearer ${config.notionSecret}",
                         config.databaseId
                     )
+                Log.d("TAG", "getBookmarks: masooook ${listResult.first()}")
                 BookmarkListUiState.Success(BookmarkList(items = listResult))
             } catch (e: Exception) {
                 Log.d("TAG", "getBookmarks: $e")
