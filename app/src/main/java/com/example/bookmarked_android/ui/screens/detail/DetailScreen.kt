@@ -83,11 +83,11 @@ fun SharedTransitionScope.DetailScreen(
         viewModel(factory = remember { BookmarkDetailViewModelFactory(pageId) })
     val bookmarkDetailUiState = viewModel.bookmarkDetailUiState
 
-    val scrollState = rememberLazyListState()
+    val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    val isAtTop by remember {
+    val isReachedTop by remember {
         derivedStateOf {
-            scrollState.firstVisibleItemIndex == 0 && scrollState.firstVisibleItemScrollOffset == 0
+            listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
         }
     }
 
@@ -105,15 +105,15 @@ fun SharedTransitionScope.DetailScreen(
             bottomPadding,
             animatedVisibilityScope,
             navController,
-            scrollState
+            listState
         )
         ScrollToTop(
             modifier = Modifier.align(Alignment.BottomEnd),
             buttonModifier = Modifier.padding(bottom = bottomPadding * 1.5f),
-            visible = showScrollToTopButton && !isAtTop,
+            visible = showScrollToTopButton && !isReachedTop,
             onClick = {
                 coroutineScope.launch {
-                    scrollState.animateScrollToItem(index = 0)
+                    listState.animateScrollToItem(index = 0)
                 }
             }
         )

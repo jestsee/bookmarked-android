@@ -2,7 +2,7 @@ package com.example.bookmarked_android.network
 
 import com.example.bookmarked_android.Config
 import com.example.bookmarked_android.model.BookmarkDetail
-import com.example.bookmarked_android.model.BookmarkItem
+import com.example.bookmarked_android.model.BookmarkListResponse
 import com.example.bookmarked_android.model.Content
 import com.example.bookmarked_android.model.ContentTypeAdapter
 import com.google.gson.GsonBuilder
@@ -13,6 +13,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 private val baseUrl = Config().baseUrl
 
@@ -41,7 +42,8 @@ interface NotionApiService {
     suspend fun getBookmarks(
         @Header("Authorization") token: String,
         @Path("databaseId") databaseId: String,
-    ): List<BookmarkItem>
+        @Query("startCursor") startCursor: String? = null
+    ): BookmarkListResponse
 
     @GET("bookmarks/{pageId}/detail")
     suspend fun getBookmarkDetail(
