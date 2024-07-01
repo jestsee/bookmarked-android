@@ -90,4 +90,7 @@ dependencies {
 
     // Navigation transition
     implementation(libs.androidx.compose.animation)
+
+    // Pull to refresh
+    implementation ("androidx.compose.material3:material3:1.3.0-beta04")
 }
