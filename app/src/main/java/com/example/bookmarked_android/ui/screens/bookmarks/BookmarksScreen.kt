@@ -6,6 +6,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.bookmarked_android.isReachedTop
 import com.example.bookmarked_android.model.BookmarkItem
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
 import com.example.bookmarked_android.ui.components.SearchBar
@@ -60,19 +63,18 @@ fun SharedTransitionScope.BookmarksScreen(
         BookmarksScreenImpl(
             navController,
             viewModel,
-            showSearchBar,
             topPadding,
             animatedVisibilityScope,
             this
         )
     }
 
-    bookmarksScope.BookmarksListContainer()
+    bookmarksScope.BookmarksListContainer(showSearchBar)
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun BookmarksScreenImpl.BookmarksListContainer() {
+private fun BookmarksScreenImpl.BookmarksListContainer(showSearchBar: Boolean) {
     val bookmarkList by viewModel.bookmarkList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isLoadingMore by viewModel.isLoadingMore.collectAsState()
@@ -86,7 +88,7 @@ private fun BookmarksScreenImpl.BookmarksListContainer() {
 
         if (error != null) return@PullToRefreshBox Text(text = "Error")
 
-        this@BookmarksListContainer.BookmarkList(bookmarkList, isLoadingMore)
+        this@BookmarksListContainer.BookmarkList(bookmarkList, isLoadingMore, showSearchBar)
     }
 }
 
@@ -99,6 +101,7 @@ internal fun LazyListState.isReachedBottom(buffer: Int = 1): Boolean {
 private fun BookmarksScreenImpl.BookmarkList(
     bookmarkList: List<BookmarkItem>,
     isLoadingMore: Boolean,
+    showSearchBar: Boolean,
     listState: LazyListState = rememberLazyListState(),
 ) {
     val localDensity = LocalDensity.current
@@ -109,7 +112,7 @@ private fun BookmarksScreenImpl.BookmarkList(
         if (isReachedBottom) viewModel.fetchMore()
     }
 
-    Box(Modifier.padding(top = topPadding, start = HORIZONTAL_PADDING, end = HORIZONTAL_PADDING)) {
+    Box(Modifier.padding(start = HORIZONTAL_PADDING, end = HORIZONTAL_PADDING)) {
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -119,7 +122,7 @@ private fun BookmarksScreenImpl.BookmarkList(
             contentPadding = PaddingValues(bottom = BOTTOM_PADDING)
         ) {
             item {
-                Spacer(modifier = Modifier.height(searchBarHeight))
+                Spacer(modifier = Modifier.height(searchBarHeight * 1.5f))
             }
 
             bookmarkListComposable(bookmarkList, this@BookmarkList)
@@ -140,10 +143,14 @@ private fun BookmarksScreenImpl.BookmarkList(
             }
         }
 
-        AnimatedVisibility(visible = showSearchBar) {
+        AnimatedVisibility(
+            visible = showSearchBar || listState.isReachedTop(),
+            enter = slideInVertically(initialOffsetY = { -500 }),
+            exit = slideOutVertically(targetOffsetY = { -500 }),
+        ) {
             SearchBar(
                 Modifier
-                    .padding(top = 20.dp)
+                    .padding(top = topPadding + 20.dp)
                     .onGloballyPositioned { coordinates ->
                         searchBarHeight = with(localDensity) { coordinates.size.height.toDp() }
                     })

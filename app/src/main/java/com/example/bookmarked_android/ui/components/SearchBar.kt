@@ -1,6 +1,7 @@
 package com.example.bookmarked_android.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,7 +27,12 @@ fun SearchBar(modifier: Modifier = Modifier) {
             .fillMaxWidth()
             .background(
                 color = MaterialTheme.colorScheme.inverseOnSurface,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(40.dp)
+            )
+            .border(
+                width = 1.5.dp,
+                color = MaterialTheme.colorScheme.inverseSurface.copy(.04f),
+                shape = RoundedCornerShape(40.dp)
             )
             .padding(horizontal = 4.dp),
         contentAlignment = Alignment.Center,

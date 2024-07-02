@@ -18,7 +18,6 @@ interface BookmarksScreenScope {
 class BookmarksScreenImpl(
     private val navController: NavController,
     val viewModel: BookmarkListViewModel,
-    val showSearchBar: Boolean,
     val topPadding: Dp,
     val animatedVisibilityScope: AnimatedVisibilityScope,
     sharedTransitionScope: SharedTransitionScope,
