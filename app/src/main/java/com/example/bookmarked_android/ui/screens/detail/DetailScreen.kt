@@ -60,6 +60,7 @@ import com.example.bookmarked_android.navigation.Screen
 import com.example.bookmarked_android.ui.components.BookmarkTags
 import com.example.bookmarked_android.ui.components.ScrollToTop
 import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
+import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
 import com.example.bookmarked_android.urlDecoder
@@ -75,7 +76,6 @@ fun SharedTransitionScope.DetailScreen(
     pageId: String,
     params: DetailScreenParams,
     topPadding: Dp,
-    bottomPadding: Dp,
     showScrollToTopButton: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
@@ -101,15 +101,13 @@ fun SharedTransitionScope.DetailScreen(
         Details(
             bookmarkDetailUiState,
             params,
-            topPadding,
-            bottomPadding,
             animatedVisibilityScope,
             navController,
             listState
         )
         ScrollToTop(
             modifier = Modifier.align(Alignment.BottomEnd),
-            buttonModifier = Modifier.padding(bottom = bottomPadding * 1.5f),
+            buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING * 1.5f),
             visible = showScrollToTopButton && !isReachedTop,
             onClick = {
                 coroutineScope.launch {
@@ -125,7 +123,7 @@ fun SharedTransitionScope.DetailScreen(
  */
 @Composable
 private fun SharedTransitionScope.Details(
-    state: BookmarkDetailUiState, params: DetailScreenParams, topPadding: Dp, bottomPadding: Dp,
+    state: BookmarkDetailUiState, params: DetailScreenParams,
     animatedVisibilityScope: AnimatedVisibilityScope,
     navController: NavController,
     scrollState: LazyListState
@@ -133,7 +131,7 @@ private fun SharedTransitionScope.Details(
     LazyColumn(
         state = scrollState,
         contentPadding = PaddingValues(
-            top = 32.dp, bottom = bottomPadding
+            top = 32.dp, bottom = BOTTOM_PADDING
         ),
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {

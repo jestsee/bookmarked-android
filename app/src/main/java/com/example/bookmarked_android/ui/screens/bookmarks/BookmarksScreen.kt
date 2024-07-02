@@ -34,40 +34,43 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.navigation.DetailScreenParams
-import com.example.bookmarked_android.navigation.Screen
-import com.example.bookmarked_android.navigation.toJson
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
+import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Purple
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SharedTransitionScope.BookmarksScreen(
     navController: NavController,
     viewModel: BookmarkListViewModel = viewModel(),
     topPadding: Dp,
-    bottomPadding: Dp,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
-    val bookmarkedUiState = viewModel.bookmarkListUiState
+    val bookmarksScope = remember {
+        BookmarksScreenImpl(
+            viewModel,
+            navController,
+            topPadding,
+            animatedVisibilityScope,
+            this
+        )
+    }
 
+    bookmarksScope.BookmarksListContainer()
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun BookmarksScreenImpl.BookmarksListContainer() {
     PullToRefreshBox(
-        isRefreshing = bookmarkedUiState is BookmarkListUiState.Loading,
-        onRefresh = { viewModel.getBookmarks() }
+        isRefreshing = uiState is BookmarkListUiState.Loading,
+        onRefresh = this@BookmarksListContainer::onRefresh
     ) {
-        when (bookmarkedUiState) {
+        when (uiState) {
             is BookmarkListUiState.Error -> Text(text = "Error")
             is BookmarkListUiState.Loading -> Text(text = "Loading...")
             is BookmarkListUiState.Success -> {
-                BookmarkList(
-                    topPadding,
-                    bottomPadding,
-                    bookmarkedUiState,
-                    { viewModel.loadMore() },
-                    viewModel.isLoadingMore.collectAsState().value,
-                    navController = navController,
-                    animatedVisibilityScope = animatedVisibilityScope
-                )
+                this@BookmarksListContainer.BookmarkList(uiState, isLoadingMore.collectAsState().value)
             }
         }
 
@@ -75,14 +78,9 @@ fun SharedTransitionScope.BookmarksScreen(
 }
 
 @Composable
-private fun SharedTransitionScope.BookmarkList(
-    topPadding: Dp,
-    bottomPadding: Dp,
-    bookmarkedUiState: BookmarkListUiState.Success,
-    onLoadMore: () -> Unit,
+private fun BookmarksScreenImpl.BookmarkList(
+    successUiState: BookmarkListUiState.Success,
     isLoadingMore: Boolean = true,
-    navController: NavController,
-    animatedVisibilityScope: AnimatedVisibilityScope,
 ) {
     val listState = rememberLazyListState()
     val buffer = 1
@@ -105,12 +103,10 @@ private fun SharedTransitionScope.BookmarkList(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(
             horizontal = HORIZONTAL_PADDING,
-            vertical = bottomPadding,
+            vertical = BOTTOM_PADDING,
         )
     ) {
-        items(bookmarkedUiState.bookmarkList) { item ->
-            val onNavigateToDetail =
-                { id: String, params: DetailScreenParams -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id/${params.toJson()}") }
+        items(successUiState.bookmarkList) { item ->
             RecentBookmarkItem(
                 item = item,
                 animatedVisibilityScope = animatedVisibilityScope,
