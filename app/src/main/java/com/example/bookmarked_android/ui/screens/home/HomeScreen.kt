@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -40,7 +41,7 @@ fun SharedTransitionScope.HomeScreen(
     topPadding: Dp,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
-    val bookmarkedUiState = viewModel.bookmarkListUiState
+    val bookmarkListUiState = viewModel.bookmarkListUiState.collectAsState().value
 
     Column(
         modifier = Modifier
@@ -51,7 +52,7 @@ fun SharedTransitionScope.HomeScreen(
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         GreetingsText()
-        when (bookmarkedUiState) {
+        when (bookmarkListUiState) {
             is BookmarkListUiState.Error -> Text(text = "Error")
             is BookmarkListUiState.Loading -> Text(text = "Loading...")
             is BookmarkListUiState.Success -> {
@@ -63,7 +64,7 @@ fun SharedTransitionScope.HomeScreen(
                     val onNavigateToDetail =
                         { id: String, params: DetailScreenParams -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id/${params.toJson()}") }
                     RecentBookmarks(
-                        bookmarkedUiState.bookmarkList.take(5),
+                        bookmarkListUiState.bookmarkList.take(5),
                         onNavigateToDetail,
                         animatedVisibilityScope
                     )

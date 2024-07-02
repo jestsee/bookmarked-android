@@ -1,9 +1,6 @@
 package com.example.bookmarked_android.ui.screens.bookmarks
 
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookmarked_android.Config
@@ -15,19 +12,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 sealed interface BookmarkListUiState {
-    data class Success(val bookmarkList: List<BookmarkItem>) : BookmarkListUiState
+    data class Success(val bookmarkList: List<BookmarkItem>, val isLoadingMore: Boolean = false) :
+        BookmarkListUiState
+
     object Error : BookmarkListUiState
     object Loading : BookmarkListUiState
 }
 
-class BookmarkListViewModel() : ViewModel() {
-    var bookmarkListUiState: BookmarkListUiState by mutableStateOf(BookmarkListUiState.Loading)
-        private set
-
+class BookmarkListViewModel : ViewModel() {
     private val config = Config()
 
-    private val _isLoadingMore = MutableStateFlow(false)
-    val isLoadingMore: StateFlow<Boolean> = _isLoadingMore.asStateFlow()
+    private val _bookmarkListUiState =
+        MutableStateFlow<BookmarkListUiState>(BookmarkListUiState.Loading)
+    val bookmarkListUiState: StateFlow<BookmarkListUiState> = _bookmarkListUiState.asStateFlow()
 
     private val _hasMore = MutableStateFlow(true)
     val hasMore: StateFlow<Boolean> = _hasMore.asStateFlow()
@@ -40,8 +37,8 @@ class BookmarkListViewModel() : ViewModel() {
 
     fun getBookmarks() {
         viewModelScope.launch {
-            bookmarkListUiState = BookmarkListUiState.Loading
-            bookmarkListUiState = try {
+            _bookmarkListUiState.value = BookmarkListUiState.Loading
+            _bookmarkListUiState.value = try {
                 val response =
                     NotionApi.retrofitService.getBookmarks(
                         "Bearer ${config.notionSecret}",
@@ -61,20 +58,25 @@ class BookmarkListViewModel() : ViewModel() {
 
     fun loadMore() {
         viewModelScope.launch {
-            _isLoadingMore.value = true
-            bookmarkListUiState = try {
+            _bookmarkListUiState.value = BookmarkListUiState.Success(
+                (bookmarkListUiState.value as BookmarkListUiState.Success).bookmarkList,
+                isLoadingMore = true
+            )
+
+            _bookmarkListUiState.value = try {
                 val response = NotionApi.retrofitService.getBookmarks(
                     "Bearer ${config.notionSecret}",
                     config.databaseId,
                     startCursor = nextCursor.value
                 )
+                _hasMore.value = response.hasMore
+                nextCursor.value = response.nextCursor
 
-                BookmarkListUiState.Success((bookmarkListUiState as BookmarkListUiState.Success).bookmarkList + response.results)
+                BookmarkListUiState.Success((bookmarkListUiState.value as BookmarkListUiState.Success).bookmarkList + response.results)
             } catch (e: Exception) {
                 // TODO: display snackbar
                 throw e
             }
-            _isLoadingMore.value = false
         }
     }
 }

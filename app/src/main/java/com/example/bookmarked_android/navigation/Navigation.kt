@@ -93,6 +93,7 @@ fun NavigationHost(
         NavigationItem.ImageDetail.route -> {
             showBottomBar.value = false
         }
+
         else -> {
             showBottomBar.value = true
         }
@@ -130,6 +131,7 @@ fun NavigationHost(
                         navController = navController,
                         topPadding = innerPadding.calculateTopPadding(),
                         viewModel = bookmarkListViewModel,
+                        showSearchBar = showBottomBar.value,
                         animatedVisibilityScope = this
                     )
                 }
