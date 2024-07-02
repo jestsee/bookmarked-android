@@ -37,7 +37,6 @@ import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarksScreen
 import com.example.bookmarked_android.ui.screens.detail.DetailScreen
 import com.example.bookmarked_android.ui.screens.home.HomeScreen
-import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.google.gson.Gson
 
 enum class Screen {
@@ -122,7 +121,6 @@ fun NavigationHost(
                     HomeScreen(
                         navController = navController,
                         topPadding = innerPadding.calculateTopPadding(),
-                        bottomPadding = BOTTOM_PADDING,
                         viewModel = bookmarkListViewModel,
                         animatedVisibilityScope = this
                     )
@@ -131,7 +129,6 @@ fun NavigationHost(
                     BookmarksScreen(
                         navController = navController,
                         topPadding = innerPadding.calculateTopPadding(),
-                        bottomPadding = BOTTOM_PADDING,
                         viewModel = bookmarkListViewModel,
                         animatedVisibilityScope = this
                     )
@@ -145,7 +142,6 @@ fun NavigationHost(
                     DetailScreen(
                         navController = navController,
                         topPadding = innerPadding.calculateTopPadding(),
-                        bottomPadding = BOTTOM_PADDING,
                         pageId = bookmarkId!!,
                         params = parsedParams,
                         showScrollToTopButton = showBottomBar.value,

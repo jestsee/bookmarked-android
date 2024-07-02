@@ -30,6 +30,7 @@ import com.example.bookmarked_android.navigation.toJson
 import com.example.bookmarked_android.ui.components.RecentBookmarks
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListUiState
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
+import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 
 @Composable
@@ -37,7 +38,6 @@ fun SharedTransitionScope.HomeScreen(
     navController: NavController,
     viewModel: BookmarkListViewModel = viewModel(),
     topPadding: Dp,
-    bottomPadding: Dp,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val bookmarkedUiState = viewModel.bookmarkListUiState
@@ -46,7 +46,7 @@ fun SharedTransitionScope.HomeScreen(
         modifier = Modifier
             .padding(top = topPadding)
             .verticalScroll(rememberScrollState())
-            .padding(bottom = bottomPadding),
+            .padding(bottom = BOTTOM_PADDING),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Spacer(modifier = Modifier.height(16.dp))
