@@ -58,8 +58,8 @@ fun SharedTransitionScope.BookmarksScreen(
 ) {
     val bookmarksScope = remember {
         BookmarksScreenImpl(
-            viewModel,
             navController,
+            viewModel,
             showSearchBar,
             topPadding,
             animatedVisibilityScope,
@@ -73,25 +73,20 @@ fun SharedTransitionScope.BookmarksScreen(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun BookmarksScreenImpl.BookmarksListContainer() {
-    val uiState by uiState.collectAsState()
-
-    val currentUiState = uiState
+    val bookmarkList by viewModel.bookmarkList.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     PullToRefreshBox(
-        isRefreshing = currentUiState is BookmarkListUiState.Loading,
-        onRefresh = this@BookmarksListContainer::onRefresh
+        isRefreshing = isLoading,
+        onRefresh = viewModel::refresh
     ) {
-        when (currentUiState) {
-            is BookmarkListUiState.Error -> Text(text = "Error")
-            is BookmarkListUiState.Loading -> Text(text = "Loading...")
-            is BookmarkListUiState.Success -> {
-                this@BookmarksListContainer.BookmarkList(
-                    currentUiState.bookmarkList,
-                    currentUiState.isLoadingMore
-                )
-            }
-        }
+        if (isLoading) return@PullToRefreshBox Text(text = "Loading...")
 
+        if (error != null) return@PullToRefreshBox Text(text = "Error")
+
+        this@BookmarksListContainer.BookmarkList(bookmarkList, isLoadingMore)
     }
 }
 
@@ -111,7 +106,7 @@ private fun BookmarksScreenImpl.BookmarkList(
 
     val isReachedBottom by remember { derivedStateOf { listState.isReachedBottom() } }
     LaunchedEffect(isReachedBottom) {
-        if (isReachedBottom) onLoadMore()
+        if (isReachedBottom) viewModel.fetchMore()
     }
 
     Box(Modifier.padding(top = topPadding, start = HORIZONTAL_PADDING, end = HORIZONTAL_PADDING)) {
