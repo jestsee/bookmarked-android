@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -29,7 +30,6 @@ import com.example.bookmarked_android.navigation.DetailScreenParams
 import com.example.bookmarked_android.navigation.Screen
 import com.example.bookmarked_android.navigation.toJson
 import com.example.bookmarked_android.ui.components.RecentBookmarks
-import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListUiState
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
@@ -41,7 +41,9 @@ fun SharedTransitionScope.HomeScreen(
     topPadding: Dp,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
-    val bookmarkListUiState = viewModel.bookmarkListUiState.collectAsState().value
+    val bookmarkList by viewModel.bookmarkList.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     Column(
         modifier = Modifier
@@ -52,25 +54,23 @@ fun SharedTransitionScope.HomeScreen(
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         GreetingsText()
-        when (bookmarkListUiState) {
-            is BookmarkListUiState.Error -> Text(text = "Error")
-            is BookmarkListUiState.Loading -> Text(text = "Loading...")
-            is BookmarkListUiState.Success -> {
-                Column(modifier = Modifier.fillMaxHeight()) {
+
+        if (isLoading) return Text(text = "Loading...")
+        if (error != null) return Text(text = "Error")
+
+
+        Column(modifier = Modifier.fillMaxHeight()) {
 //                    Spacer(modifier = Modifier.size(12.dp))
 //                    BookmarkCarousel(bookmarkedUiState.bookmarkList.items.takeLast(3))
 //                    Spacer(modifier = Modifier.size(16.dp))
 
-                    val onNavigateToDetail =
-                        { id: String, params: DetailScreenParams -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id/${params.toJson()}") }
-                    RecentBookmarks(
-                        bookmarkListUiState.bookmarkList.take(5),
-                        onNavigateToDetail,
-                        animatedVisibilityScope
-                    )
-                }
-            }
-
+            val onNavigateToDetail =
+                { id: String, params: DetailScreenParams -> navController.navigate("${Screen.BOOKMARK_DETAIL.name}/$id/${params.toJson()}") }
+            RecentBookmarks(
+                bookmarkList.take(5),
+                onNavigateToDetail,
+                animatedVisibilityScope
+            )
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.example.bookmarked_android.ui.screens.bookmarks
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookmarked_android.Config
@@ -11,20 +10,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-sealed interface BookmarkListUiState {
-    data class Success(val bookmarkList: List<BookmarkItem>, val isLoadingMore: Boolean = false) :
-        BookmarkListUiState
-
-    object Error : BookmarkListUiState
-    object Loading : BookmarkListUiState
+sealed interface BookmarkListErrorState {
+    data class FetchError(val message: String) : BookmarkListErrorState
+    data class FetchMoreError(val message: String) : BookmarkListErrorState
 }
 
-class BookmarkListViewModel : ViewModel() {
+class BookmarkListViewModel() : ViewModel() {
     private val config = Config()
 
-    private val _bookmarkListUiState =
-        MutableStateFlow<BookmarkListUiState>(BookmarkListUiState.Loading)
-    val bookmarkListUiState: StateFlow<BookmarkListUiState> = _bookmarkListUiState.asStateFlow()
+    private val _bookmarkList = MutableStateFlow<List<BookmarkItem>>(emptyList())
+    val bookmarkList: StateFlow<List<BookmarkItem>> = _bookmarkList.asStateFlow()
+
+    private val _error = MutableStateFlow<BookmarkListErrorState?>(null)
+    val error: StateFlow<BookmarkListErrorState?> = _error.asStateFlow()
+
+    private val _isLoading = MutableStateFlow<Boolean>(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _isLoadingMore = MutableStateFlow<Boolean>(false)
+    val isLoadingMore: StateFlow<Boolean> = _isLoadingMore.asStateFlow()
 
     private val _hasMore = MutableStateFlow(true)
     val hasMore: StateFlow<Boolean> = _hasMore.asStateFlow()
@@ -32,38 +36,18 @@ class BookmarkListViewModel : ViewModel() {
     private val nextCursor = MutableStateFlow<String?>(null)
 
     init {
-        getBookmarks()
+        refresh()
     }
 
-    fun getBookmarks() {
+    private fun fetchBookmarks(
+        handleLoading: (Boolean) -> Unit,
+        handleError: (String) -> BookmarkListErrorState,
+        handleData: (List<BookmarkItem>) -> List<BookmarkItem> = { it }
+    ) {
         viewModelScope.launch {
-            _bookmarkListUiState.value = BookmarkListUiState.Loading
-            _bookmarkListUiState.value = try {
-                val response =
-                    NotionApi.retrofitService.getBookmarks(
-                        "Bearer ${config.notionSecret}",
-                        config.databaseId
-                    )
-
-                _hasMore.value = response.hasMore
-                nextCursor.value = response.nextCursor
-
-                BookmarkListUiState.Success(response.results)
-            } catch (e: Exception) {
-                Log.d("TAG", "getBookmarks: $e")
-                BookmarkListUiState.Error
-            }
-        }
-    }
-
-    fun loadMore() {
-        viewModelScope.launch {
-            _bookmarkListUiState.value = BookmarkListUiState.Success(
-                (bookmarkListUiState.value as BookmarkListUiState.Success).bookmarkList,
-                isLoadingMore = true
-            )
-
-            _bookmarkListUiState.value = try {
+            _error.value = null
+            handleLoading(true)
+            try {
                 val response = NotionApi.retrofitService.getBookmarks(
                     "Bearer ${config.notionSecret}",
                     config.databaseId,
@@ -72,11 +56,25 @@ class BookmarkListViewModel : ViewModel() {
                 _hasMore.value = response.hasMore
                 nextCursor.value = response.nextCursor
 
-                BookmarkListUiState.Success((bookmarkListUiState.value as BookmarkListUiState.Success).bookmarkList + response.results)
+                _bookmarkList.value = handleData(response.results)
             } catch (e: Exception) {
-                // TODO: display snackbar
-                throw e
+                _error.value = handleError(e.message ?: "Unknown error")
             }
+            handleLoading(false)
         }
+    }
+
+    fun refresh() {
+        nextCursor.value = null
+        fetchBookmarks(
+            handleLoading = { _isLoading.value = it },
+            handleError = { BookmarkListErrorState.FetchError(it) })
+    }
+
+    fun fetchMore() {
+        fetchBookmarks(
+            handleLoading = { _isLoadingMore.value = it },
+            handleError = { BookmarkListErrorState.FetchMoreError(it) },
+            handleData = { bookmarkList.value + it })
     }
 }

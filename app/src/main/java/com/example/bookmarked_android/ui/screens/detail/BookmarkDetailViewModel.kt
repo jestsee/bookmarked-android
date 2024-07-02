@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.bookmarked_android.Config
 import com.example.bookmarked_android.model.BookmarkDetail
@@ -11,7 +12,6 @@ import com.example.bookmarked_android.model.TextsContent
 import com.example.bookmarked_android.network.NotionApi
 import kotlinx.coroutines.launch
 import okhttp3.internal.toImmutableList
-import androidx.lifecycle.ViewModelProvider as ViewModelProvider1
 
 sealed interface BookmarkDetailUiState {
     data class Success(val details: List<BookmarkDetail>) : BookmarkDetailUiState
@@ -60,7 +60,7 @@ class BookmarkDetailViewModel(pageId: String) : ViewModel() {
     }
 }
 
-class BookmarkDetailViewModelFactory constructor(val pageId: String) : ViewModelProvider1.Factory {
+class BookmarkDetailViewModelFactory(private val pageId: String) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return BookmarkDetailViewModel(pageId) as T
     }
