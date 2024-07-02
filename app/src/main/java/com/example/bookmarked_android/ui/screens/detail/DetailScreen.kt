@@ -47,6 +47,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bookmarked_android.R
+import com.example.bookmarked_android.isReachedTop
 import com.example.bookmarked_android.leftBorder
 import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.CalloutContent
@@ -85,11 +86,7 @@ fun SharedTransitionScope.DetailScreen(
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    val isReachedTop by remember {
-        derivedStateOf {
-            listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
-        }
-    }
+    val isReachedTop by remember { derivedStateOf { listState.isReachedTop() } }
 
     Box(
         modifier = Modifier.padding(

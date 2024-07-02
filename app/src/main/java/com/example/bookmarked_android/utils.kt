@@ -1,6 +1,7 @@
 package com.example.bookmarked_android
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
@@ -26,9 +27,14 @@ fun urlEncoder(url: String): String {
     val replacedUrl = url.replace("%", PERCENT).replace("+", PLUS)
     return URLEncoder.encode(replacedUrl, StandardCharsets.UTF_8.toString())
 }
+
 fun urlDecoder(url: String): String {
     val decodedUrl = URLDecoder.decode(url, StandardCharsets.UTF_8.toString())
     return decodedUrl.replace(PERCENT, "%").replace(PLUS, "+")
+}
+
+fun LazyListState.isReachedTop(): Boolean {
+    return firstVisibleItemIndex == 0 && firstVisibleItemScrollOffset == 0
 }
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
