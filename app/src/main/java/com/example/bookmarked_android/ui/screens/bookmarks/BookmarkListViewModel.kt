@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.bookmarked_android.Config
 import com.example.bookmarked_android.model.BookmarkItem
 import com.example.bookmarked_android.network.NotionApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
 sealed interface BookmarkListErrorState {
@@ -18,6 +21,9 @@ sealed interface BookmarkListErrorState {
 class BookmarkListViewModel() : ViewModel() {
     private val config = Config()
 
+    /**
+     * Bookmark list state
+     */
     private val _bookmarkList = MutableStateFlow<List<BookmarkItem>>(emptyList())
     val bookmarkList: StateFlow<List<BookmarkItem>> = _bookmarkList.asStateFlow()
 
@@ -35,8 +41,29 @@ class BookmarkListViewModel() : ViewModel() {
 
     private val nextCursor = MutableStateFlow<String?>(null)
 
+    /**
+     * Bookmark list filter
+     */
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     init {
-        refresh()
+        fetch()
+        observeFilter()
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun observeFilter() {
+        viewModelScope.launch {
+            _searchQuery.debounce(timeoutMillis = 500).collectLatest {
+//                if (it.isEmpty()) {
+//                    fetchBookmarks(
+//                        handleLoading = { _isLoading.value = it },
+//                        handleError = { BookmarkListErrorState.FetchError(it) })
+//                }
+                fetch()
+            }
+        }
     }
 
     private fun fetchBookmarks(
@@ -51,7 +78,8 @@ class BookmarkListViewModel() : ViewModel() {
                 val response = NotionApi.retrofitService.getBookmarks(
                     "Bearer ${config.notionSecret}",
                     config.databaseId,
-                    startCursor = nextCursor.value
+                    startCursor = nextCursor.value,
+                    search = _searchQuery.value
                 )
                 _hasMore.value = response.hasMore
                 nextCursor.value = response.nextCursor
@@ -64,7 +92,7 @@ class BookmarkListViewModel() : ViewModel() {
         }
     }
 
-    fun refresh() {
+    fun fetch() {
         nextCursor.value = null
         fetchBookmarks(
             handleLoading = { _isLoading.value = it },
@@ -76,5 +104,9 @@ class BookmarkListViewModel() : ViewModel() {
             handleLoading = { _isLoadingMore.value = it },
             handleError = { BookmarkListErrorState.FetchMoreError(it) },
             handleData = { bookmarkList.value + it })
+    }
+
+    fun setSearch(query: String) {
+        _searchQuery.value = query
     }
 }

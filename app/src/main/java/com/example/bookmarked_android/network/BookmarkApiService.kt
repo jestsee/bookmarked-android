@@ -42,7 +42,8 @@ interface NotionApiService {
     suspend fun getBookmarks(
         @Header("Authorization") token: String,
         @Path("databaseId") databaseId: String,
-        @Query("startCursor") startCursor: String? = null
+        @Query("startCursor") startCursor: String? = null,
+        @Query("search") search: String? = null
     ): BookmarkListResponse
 
     @GET("bookmarks/{pageId}/detail")

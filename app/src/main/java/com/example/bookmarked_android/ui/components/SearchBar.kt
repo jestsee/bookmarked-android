@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -21,17 +24,21 @@ import androidx.compose.ui.unit.dp
 import com.example.bookmarked_android.R
 
 @Composable
-fun SearchBar(modifier: Modifier = Modifier) {
+fun SearchBar(
+    modifier: Modifier = Modifier,
+    value: String,
+    onChange: (String) -> Unit,
+    onClear: () -> Unit
+) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .background(
-                color = MaterialTheme.colorScheme.inverseOnSurface,
-                shape = RoundedCornerShape(40.dp)
+                color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(40.dp)
             )
             .border(
                 width = 1.5.dp,
-                color = MaterialTheme.colorScheme.inverseSurface.copy(.04f),
+                color = MaterialTheme.colorScheme.inverseSurface.copy(.1f),
                 shape = RoundedCornerShape(40.dp)
             )
             .padding(horizontal = 4.dp),
@@ -39,16 +46,25 @@ fun SearchBar(modifier: Modifier = Modifier) {
     ) {
         TextField(
             modifier = Modifier.fillMaxWidth(),
-            value = "",
-            onValueChange = {},
-            shape = RoundedCornerShape(16.dp),
+            value = value,
+            onValueChange = onChange,
             placeholder = { Text("Search") },
-            trailingIcon = {
+            leadingIcon = {
                 Icon(
-                    modifier = Modifier.size(24.dp),
+                    modifier = Modifier.size(20.dp),
                     painter = painterResource(id = R.drawable.icon_search),
                     contentDescription = "Search icon"
                 )
+            },
+            trailingIcon = {
+                if (value.isNotEmpty()) {
+                    IconButton(onClick = onClear) {
+                        Icon(
+                            contentDescription = "Clear",
+                            imageVector = Icons.Rounded.Clear,
+                        )
+                    }
+                }
             },
             colors = TextFieldDefaults.colors(
                 disabledTextColor = Color.Transparent,

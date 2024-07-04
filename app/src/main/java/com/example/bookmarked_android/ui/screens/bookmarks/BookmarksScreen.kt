@@ -8,11 +8,11 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,6 +33,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -42,10 +43,13 @@ import androidx.navigation.NavController
 import com.example.bookmarked_android.isReachedTop
 import com.example.bookmarked_android.model.BookmarkItem
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
+import com.example.bookmarked_android.ui.components.ScrollToTop
 import com.example.bookmarked_android.ui.components.SearchBar
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Purple
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun SharedTransitionScope.BookmarksScreen(
@@ -78,13 +82,16 @@ private fun BookmarksScreenImpl.BookmarksListContainer(isScrollingUp: Boolean) {
 
     PullToRefreshBox(
         isRefreshing = isLoading,
-        onRefresh = viewModel::refresh
+        onRefresh = viewModel::fetch
     ) {
-        if (isLoading) return@PullToRefreshBox Text(text = "Loading...")
-
         if (error != null) return@PullToRefreshBox Text(text = "Error")
 
-        this@BookmarksListContainer.BookmarkList(bookmarkList, isLoadingMore, isScrollingUp)
+        this@BookmarksListContainer.BookmarkList(
+            bookmarkList,
+            isLoading,
+            isLoadingMore,
+            isScrollingUp
+        )
     }
 }
 
@@ -93,16 +100,20 @@ internal fun LazyListState.isReachedBottom(buffer: Int = 1): Boolean {
     return lastVisibleItem?.index != 0 && lastVisibleItem?.index == this.layoutInfo.totalItemsCount - buffer
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BookmarksScreenImpl.BookmarkList(
     bookmarkList: List<BookmarkItem>,
+    isLoading: Boolean,
     isLoadingMore: Boolean,
     isScrollingUp: Boolean,
     listState: LazyListState = rememberLazyListState(),
+    coroutineScope: CoroutineScope = rememberCoroutineScope()
 ) {
     val isReachedBottom by remember { derivedStateOf { listState.isReachedBottom() } }
-    LaunchedEffect(isReachedBottom) {
-        if (isReachedBottom) viewModel.fetchMore()
+    val hasMoreData = viewModel.hasMore.collectAsState().value
+    LaunchedEffect(isReachedBottom, hasMoreData) {
+        if (isReachedBottom && hasMoreData) viewModel.fetchMore()
     }
 
     Box(Modifier.padding(start = HORIZONTAL_PADDING, end = HORIZONTAL_PADDING)) {
@@ -114,11 +125,29 @@ private fun BookmarksScreenImpl.BookmarkList(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = BOTTOM_PADDING)
         ) {
-            item {
-                Spacer(modifier = Modifier.height(84.dp))
+            stickyHeader {
+                AnimatedVisibility(
+                    visible = isScrollingUp || listState.isReachedTop(),
+                    enter = slideInVertically(initialOffsetY = { -500 }),
+                    exit = slideOutVertically(targetOffsetY = { -500 }),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(84.dp)
+                            .padding(top = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        SearchBar(
+                            value = viewModel.searchQuery.collectAsState().value,
+                            onChange = viewModel::setSearch,
+                            onClear = { viewModel.setSearch("") })
+                    }
+                }
             }
 
-            bookmarkListComposable(bookmarkList, this@BookmarkList)
+            if (isLoading) item { Text("Loading...") }
+
+            if (!isLoading) bookmarkListComposable(bookmarkList, this@BookmarkList)
 
             if (isLoadingMore) {
                 item {
@@ -136,13 +165,16 @@ private fun BookmarksScreenImpl.BookmarkList(
             }
         }
 
-        AnimatedVisibility(
-            visible = isScrollingUp || listState.isReachedTop(),
-            enter = slideInVertically(initialOffsetY = { -500 }),
-            exit = slideOutVertically(targetOffsetY = { -500 }),
-        ) {
-            SearchBar(Modifier.padding(top = topPadding + 20.dp))
-        }
+        ScrollToTop(
+            modifier = Modifier.align(Alignment.BottomEnd),
+            buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING),
+            visible = isScrollingUp && !listState.isReachedTop(),
+            onClick = {
+                coroutineScope.launch {
+                    listState.scrollToItem(index = 0)
+                }
+            }
+        )
     }
 }
 
