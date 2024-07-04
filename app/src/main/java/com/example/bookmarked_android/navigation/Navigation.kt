@@ -112,6 +112,11 @@ fun NavigationHost(
     Scaffold(
         Modifier.nestedScroll(nestedScrollConnection),
         bottomBar = {
+            /**
+             * TODO
+             * if navBackStackEntry?.destination?.route == NavigationItem.BookmarkList.route
+             * then show the search bar
+             */
             BottomNavigationBar(
                 showBottomBar.value,
                 navController,

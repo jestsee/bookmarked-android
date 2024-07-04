@@ -5,6 +5,7 @@ import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.BookmarkListResponse
 import com.example.bookmarked_android.model.Content
 import com.example.bookmarked_android.model.ContentTypeAdapter
+import com.example.bookmarked_android.model.TagListResponse
 import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -51,6 +52,11 @@ interface NotionApiService {
         @Header("Authorization") token: String,
         @Path("pageId") pageId: String,
     ): List<BookmarkDetail>
+
+    @GET("bookmarks/{databaseId}/tags")
+    suspend fun getTags(
+        @Header("Authorization") token: String,
+    ): TagListResponse
 }
 
 object NotionApi {
