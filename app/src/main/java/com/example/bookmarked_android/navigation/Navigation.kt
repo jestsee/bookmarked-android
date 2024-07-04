@@ -140,6 +140,7 @@ fun NavigationHost(
                         navController = navController,
                         topPadding = innerPadding.calculateTopPadding(),
                         viewModel = bookmarkListViewModel,
+                        isScrollingUp = isScrollingUp.value,
                         animatedVisibilityScope = this
                     )
                 }
