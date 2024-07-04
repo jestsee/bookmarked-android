@@ -101,6 +101,7 @@ fun SharedTransitionScope.RecentBookmarks(
 fun SharedTransitionScope.RecentBookmarkItem(
     item: BookmarkItem,
     modifier: Modifier,
+    shouldAnimate: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val uriHandler = LocalUriHandler.current
@@ -135,17 +136,25 @@ fun SharedTransitionScope.RecentBookmarkItem(
             Text(
                 text = item.title,
                 maxLines = 4, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.wrapContentWidth().sharedBounds(
-                    rememberSharedContentState(
-                        key = "title-${item.id}"
-                    ),
-                    animatedVisibilityScope = animatedVisibilityScope,
-                    enter = fadeIn(),
-                    exit = fadeOut(),
-                )
+                modifier = Modifier
+                    .then(
+                        if (shouldAnimate)
+                            Modifier.sharedBounds(
+                                rememberSharedContentState(key = "title-${item.id}"),
+                                animatedVisibilityScope = animatedVisibilityScope,
+                                enter = fadeIn(),
+                                exit = fadeOut(),
+                            ) else Modifier
+                    )
+                    .wrapContentWidth()
             )
             Spacer(modifier = Modifier.size(24.dp))
-            BookmarkTags(tags = item.tags, item.id, animatedVisibilityScope)
+            BookmarkTags(
+                tags = item.tags,
+                bookmarkId = item.id,
+                shouldAnimate = shouldAnimate,
+                animatedVisibilityScope = animatedVisibilityScope
+            )
         }
         IconButton(
             modifier = Modifier

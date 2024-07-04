@@ -22,6 +22,7 @@ import com.example.bookmarked_android.model.Tag
 fun SharedTransitionScope.BookmarkTags(
     tags: List<Tag>,
     bookmarkId: String,
+    shouldAnimate: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     FlowRow(
@@ -29,22 +30,28 @@ fun SharedTransitionScope.BookmarkTags(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         tags.forEach { tag ->
-            BookmarkTag(tag, bookmarkId, animatedVisibilityScope)
+            BookmarkTag(
+                tag,
+                modifier = Modifier.then(
+                    if (shouldAnimate) Modifier.sharedElement(
+                        state = rememberSharedContentState(key = "${bookmarkId}-${tag.id}"),
+                        animatedVisibilityScope = animatedVisibilityScope,
+                    ) else Modifier
+                )
+            )
         }
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun SharedTransitionScope.BookmarkTag(tag: Tag, bookmarkId: String, animatedVisibilityScope: AnimatedVisibilityScope) {
+fun BookmarkTag(
+    tag: Tag,
+    modifier: Modifier = Modifier,
+) {
     val color = MaterialTheme.colorScheme.onSurface.copy(.75f)
     Text(
         tag.name,
-        modifier = Modifier
-            .sharedElement(
-                state = rememberSharedContentState(key = "${bookmarkId}-${tag.id}"),
-                animatedVisibilityScope = animatedVisibilityScope,
-            )
+        modifier = modifier
             .border(
                 width = 0.5.dp,
                 color = color,

@@ -32,13 +32,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,7 +53,7 @@ fun SharedTransitionScope.BookmarksScreen(
     viewModel: BookmarkListViewModel = viewModel(),
     topPadding: Dp,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    showSearchBar: Boolean = false,
+    isScrollingUp: Boolean = false,
 ) {
     val bookmarksScope = remember {
         BookmarksScreenImpl(
@@ -69,12 +65,12 @@ fun SharedTransitionScope.BookmarksScreen(
         )
     }
 
-    bookmarksScope.BookmarksListContainer(showSearchBar)
+    bookmarksScope.BookmarksListContainer(isScrollingUp)
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun BookmarksScreenImpl.BookmarksListContainer(showSearchBar: Boolean) {
+private fun BookmarksScreenImpl.BookmarksListContainer(isScrollingUp: Boolean) {
     val bookmarkList by viewModel.bookmarkList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isLoadingMore by viewModel.isLoadingMore.collectAsState()
@@ -88,7 +84,7 @@ private fun BookmarksScreenImpl.BookmarksListContainer(showSearchBar: Boolean) {
 
         if (error != null) return@PullToRefreshBox Text(text = "Error")
 
-        this@BookmarksListContainer.BookmarkList(bookmarkList, isLoadingMore, showSearchBar)
+        this@BookmarksListContainer.BookmarkList(bookmarkList, isLoadingMore, isScrollingUp)
     }
 }
 
@@ -101,12 +97,9 @@ internal fun LazyListState.isReachedBottom(buffer: Int = 1): Boolean {
 private fun BookmarksScreenImpl.BookmarkList(
     bookmarkList: List<BookmarkItem>,
     isLoadingMore: Boolean,
-    showSearchBar: Boolean,
+    isScrollingUp: Boolean,
     listState: LazyListState = rememberLazyListState(),
 ) {
-    val localDensity = LocalDensity.current
-    var searchBarHeight by remember { mutableStateOf(0.dp) }
-
     val isReachedBottom by remember { derivedStateOf { listState.isReachedBottom() } }
     LaunchedEffect(isReachedBottom) {
         if (isReachedBottom) viewModel.fetchMore()
@@ -122,7 +115,7 @@ private fun BookmarksScreenImpl.BookmarkList(
             contentPadding = PaddingValues(bottom = BOTTOM_PADDING)
         ) {
             item {
-                Spacer(modifier = Modifier.height(searchBarHeight * 1.5f))
+                Spacer(modifier = Modifier.height(84.dp))
             }
 
             bookmarkListComposable(bookmarkList, this@BookmarkList)
@@ -144,16 +137,11 @@ private fun BookmarksScreenImpl.BookmarkList(
         }
 
         AnimatedVisibility(
-            visible = showSearchBar || listState.isReachedTop(),
+            visible = isScrollingUp || listState.isReachedTop(),
             enter = slideInVertically(initialOffsetY = { -500 }),
             exit = slideOutVertically(targetOffsetY = { -500 }),
         ) {
-            SearchBar(
-                Modifier
-                    .padding(top = topPadding + 20.dp)
-                    .onGloballyPositioned { coordinates ->
-                        searchBarHeight = with(localDensity) { coordinates.size.height.toDp() }
-                    })
+            SearchBar(Modifier.padding(top = topPadding + 20.dp))
         }
     }
 }
@@ -166,6 +154,7 @@ private fun LazyListScope.bookmarkListComposable(
         bookmarksScreenImpl.RecentBookmarkItem(
             item = item,
             animatedVisibilityScope = bookmarksScreenImpl.animatedVisibilityScope,
+            shouldAnimate = true,
             modifier = Modifier.clickable {
                 bookmarksScreenImpl.onNavigateToDetail(item)
             }

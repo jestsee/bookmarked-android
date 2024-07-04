@@ -29,8 +29,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -77,7 +75,7 @@ fun SharedTransitionScope.DetailScreen(
     pageId: String,
     params: DetailScreenParams,
     topPadding: Dp,
-    showScrollToTopButton: Boolean = false,
+    isScrollingUp: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val viewModel: BookmarkDetailViewModel =
@@ -86,7 +84,6 @@ fun SharedTransitionScope.DetailScreen(
 
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    val isReachedTop by remember { derivedStateOf { listState.isReachedTop() } }
 
     Box(
         modifier = Modifier.padding(
@@ -104,8 +101,8 @@ fun SharedTransitionScope.DetailScreen(
         )
         ScrollToTop(
             modifier = Modifier.align(Alignment.BottomEnd),
-            buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING * 1.5f),
-            visible = showScrollToTopButton && !isReachedTop,
+            buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING),
+            visible = isScrollingUp && !listState.isReachedTop(),
             onClick = {
                 coroutineScope.launch {
                     listState.animateScrollToItem(index = 0)
@@ -198,7 +195,7 @@ private fun SharedTransitionScope.Details(
                         letterSpacing = 1.sp
                     )
                     Spacer(modifier = Modifier.size(12.dp))
-                    BookmarkTags(params.tags, params.id, animatedVisibilityScope)
+                    BookmarkTags(params.tags, params.id, shouldAnimate = true, animatedVisibilityScope)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
             }

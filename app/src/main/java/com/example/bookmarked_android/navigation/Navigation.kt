@@ -10,14 +10,12 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -40,7 +38,7 @@ import com.example.bookmarked_android.ui.screens.home.HomeScreen
 import com.google.gson.Gson
 
 enum class Screen {
-    HOME, BOOKMARK_LIST, BOOKMARK_DETAIL, IMAGE_DETAIL
+    HOME, BOOKMARK_LIST, BOOKMARK_DETAIL, IMAGE_DETAIL, PROFILE
 }
 
 sealed class NavigationItem(val route: String) {
@@ -51,6 +49,8 @@ sealed class NavigationItem(val route: String) {
 
     data object ImageDetail :
         NavigationItem(Screen.IMAGE_DETAIL.name + "/{imageUrl}")
+
+    data object Profile : NavigationItem(Screen.PROFILE.name)
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -63,6 +63,8 @@ fun NavigationHost(
     val bottomBarHeight = 64.dp
     val bottomBarHeightPx = with(LocalDensity.current) { bottomBarHeight.roundToPx().toFloat() }
     val bottomBarOffsetHeightPx = remember { mutableFloatStateOf(0f) }
+    val isScrollingUp = remember { mutableStateOf(false) }
+    val shouldShowBottomBar = remember { mutableStateOf(true) }
     val showBottomBar = remember { mutableStateOf(true) }
 
 // connection to the nested scroll system and listen to the scroll
@@ -74,7 +76,9 @@ fun NavigationHost(
                 val delta = available.y
                 val newOffset = bottomBarOffsetHeightPx.floatValue + delta
                 bottomBarOffsetHeightPx.floatValue = newOffset.coerceIn(-bottomBarHeightPx, 0f)
-                showBottomBar.value = newOffset / 2 >= 0f
+                isScrollingUp.value = newOffset / 2 >= 0f
+
+                if (shouldShowBottomBar.value) showBottomBar.value = isScrollingUp.value
 
                 return Offset.Zero
             }
@@ -82,7 +86,6 @@ fun NavigationHost(
     }
 
     val bookmarkListViewModel: BookmarkListViewModel = viewModel()
-    var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
 
@@ -91,10 +94,17 @@ fun NavigationHost(
      */
     when (navBackStackEntry?.destination?.route) {
         NavigationItem.ImageDetail.route -> {
+            shouldShowBottomBar.value = false
+            showBottomBar.value = false
+        }
+
+        NavigationItem.BookmarkDetail.route -> {
+            shouldShowBottomBar.value = false
             showBottomBar.value = false
         }
 
         else -> {
+            shouldShowBottomBar.value = true
             showBottomBar.value = true
         }
     }
@@ -105,8 +115,7 @@ fun NavigationHost(
             BottomNavigationBar(
                 showBottomBar.value,
                 navController,
-                selectedIndex
-            ) { index -> selectedIndex = index }
+            )
         }) { innerPadding ->
         SharedTransitionLayout {
             NavHost(
@@ -131,7 +140,6 @@ fun NavigationHost(
                         navController = navController,
                         topPadding = innerPadding.calculateTopPadding(),
                         viewModel = bookmarkListViewModel,
-                        showSearchBar = showBottomBar.value,
                         animatedVisibilityScope = this
                     )
                 }
@@ -146,7 +154,7 @@ fun NavigationHost(
                         topPadding = innerPadding.calculateTopPadding(),
                         pageId = bookmarkId!!,
                         params = parsedParams,
-                        showScrollToTopButton = showBottomBar.value,
+                        isScrollingUp = isScrollingUp.value,
                         animatedVisibilityScope = this
                     )
                 }
@@ -157,6 +165,13 @@ fun NavigationHost(
                     val imageUrl = it.arguments?.getString("imageUrl")
 
                     ImageDialog(url = imageUrl!!, animatedVisibilityScope = this)
+                }
+                composable(
+                    NavigationItem.Profile.route,
+                    enterTransition = { EnterTransition.None },
+                    exitTransition = { ExitTransition.None }) {
+
+                    Text("TODO")
                 }
             }
         }
