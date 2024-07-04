@@ -48,3 +48,8 @@ data class Tag(
     @SerializedName("name")
     val name: String
 )
+
+@Immutable
+data class TagListResponse(
+    val results: List<Tag>
+)

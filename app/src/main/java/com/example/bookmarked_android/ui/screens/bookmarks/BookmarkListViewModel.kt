@@ -48,7 +48,7 @@ class BookmarkListViewModel() : ViewModel() {
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     init {
-        fetch()
+        fetchBookmarks()
         observeFilter()
     }
 
@@ -56,12 +56,12 @@ class BookmarkListViewModel() : ViewModel() {
     private fun observeFilter() {
         viewModelScope.launch {
             _searchQuery.debounce(timeoutMillis = 500).collectLatest {
-                fetch()
+                fetchBookmarks()
             }
         }
     }
 
-    private fun fetchBookmarks(
+    private fun fetchBookmarkList(
         handleLoading: (Boolean) -> Unit,
         handleError: (String) -> BookmarkListErrorState,
         handleData: (List<BookmarkItem>) -> List<BookmarkItem> = { it }
@@ -87,16 +87,16 @@ class BookmarkListViewModel() : ViewModel() {
         }
     }
 
-    fun fetch() {
+    fun fetchBookmarks() {
         nextCursor.value = null
-        fetchBookmarks(
+        fetchBookmarkList(
             handleLoading = { _isLoading.value = it },
             handleError = { BookmarkListErrorState.FetchError(it) })
     }
 
-    fun fetchMore() {
+    fun fetchMoreBookmarks() {
         if (isLoading.value || !hasMore.value) return
-        fetchBookmarks(
+        fetchBookmarkList(
             handleLoading = { _isLoadingMore.value = it },
             handleError = { BookmarkListErrorState.FetchMoreError(it) },
             handleData = { bookmarkList.value + it })

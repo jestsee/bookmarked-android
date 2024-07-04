@@ -25,15 +25,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -80,9 +84,12 @@ private fun BookmarksScreenImpl.BookmarksListContainer(isScrollingUp: Boolean) {
     val isLoadingMore by viewModel.isLoadingMore.collectAsState()
     val error by viewModel.error.collectAsState()
 
+    var showFilterBottomSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
+
     PullToRefreshBox(
         isRefreshing = isLoading,
-        onRefresh = viewModel::fetch
+        onRefresh = viewModel::fetchBookmarks
     ) {
         if (error != null) return@PullToRefreshBox Text(text = "Error")
 
@@ -92,6 +99,15 @@ private fun BookmarksScreenImpl.BookmarksListContainer(isScrollingUp: Boolean) {
             isLoadingMore,
             isScrollingUp
         )
+    }
+
+    if (showFilterBottomSheet) {
+        ModalBottomSheet(
+            sheetState = sheetState,
+            onDismissRequest = { showFilterBottomSheet = false },
+        ) {
+            Text("Alooo")
+        }
     }
 }
 
@@ -113,7 +129,7 @@ private fun BookmarksScreenImpl.BookmarkList(
     val isReachedBottom by remember { derivedStateOf { listState.isReachedBottom() } }
     val hasMoreData = viewModel.hasMore.collectAsState().value
     LaunchedEffect(isReachedBottom, hasMoreData) {
-        if (isReachedBottom && hasMoreData) viewModel.fetchMore()
+        if (isReachedBottom && hasMoreData) viewModel.fetchMoreBookmarks()
     }
 
     Box(Modifier.padding(start = HORIZONTAL_PADDING, end = HORIZONTAL_PADDING)) {
