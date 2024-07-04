@@ -56,11 +56,6 @@ class BookmarkListViewModel() : ViewModel() {
     private fun observeFilter() {
         viewModelScope.launch {
             _searchQuery.debounce(timeoutMillis = 500).collectLatest {
-//                if (it.isEmpty()) {
-//                    fetchBookmarks(
-//                        handleLoading = { _isLoading.value = it },
-//                        handleError = { BookmarkListErrorState.FetchError(it) })
-//                }
                 fetch()
             }
         }
@@ -100,6 +95,7 @@ class BookmarkListViewModel() : ViewModel() {
     }
 
     fun fetchMore() {
+        if (isLoading.value || !hasMore.value) return
         fetchBookmarks(
             handleLoading = { _isLoadingMore.value = it },
             handleError = { BookmarkListErrorState.FetchMoreError(it) },
