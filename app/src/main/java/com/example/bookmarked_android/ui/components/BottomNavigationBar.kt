@@ -113,13 +113,13 @@ fun CustomAppBar(
             .padding(bottom = 24.dp)
     ) {
         Surface(
-            tonalElevation = 0.dp,
+//            tonalElevation = 0.dp,
             modifier = modifier
                 .clip(RoundedCornerShape(50))
                 .align(Alignment.Center)
         ) {
             Row(
-                Modifier.padding(6.dp),
+                Modifier.padding(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(
                     20.dp,
                     alignment = Alignment.CenterHorizontally

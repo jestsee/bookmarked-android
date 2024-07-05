@@ -1,4 +1,4 @@
-package com.example.bookmarked_android
+package com.example.bookmarked_android.utils
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.lazy.LazyListState

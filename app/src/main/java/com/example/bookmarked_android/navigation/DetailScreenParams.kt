@@ -1,7 +1,7 @@
 package com.example.bookmarked_android.navigation
 
 import com.example.bookmarked_android.model.Tag
-import com.example.bookmarked_android.urlEncoder
+import com.example.bookmarked_android.utils.urlEncoder
 import com.google.gson.Gson
 
 data class DetailScreenParams(

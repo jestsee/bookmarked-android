@@ -18,7 +18,7 @@ sealed interface BookmarkListErrorState {
     data class FetchMoreError(val message: String) : BookmarkListErrorState
 }
 
-class BookmarkListViewModel() : ViewModel() {
+class BookmarkListViewModel : ViewModel() {
     private val config = Config()
 
     /**
