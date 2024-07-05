@@ -56,6 +56,7 @@ interface NotionApiService {
     @GET("bookmarks/{databaseId}/tags")
     suspend fun getTags(
         @Header("Authorization") token: String,
+        @Path("databaseId") databaseId: String,
     ): TagListResponse
 }
 

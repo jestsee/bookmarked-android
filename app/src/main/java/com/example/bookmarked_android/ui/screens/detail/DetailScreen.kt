@@ -45,8 +45,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bookmarked_android.R
-import com.example.bookmarked_android.isReachedTop
-import com.example.bookmarked_android.leftBorder
+import com.example.bookmarked_android.utils.isReachedTop
+import com.example.bookmarked_android.utils.leftBorder
 import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.CalloutContent
 import com.example.bookmarked_android.model.Content
@@ -62,8 +62,8 @@ import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
-import com.example.bookmarked_android.urlDecoder
-import com.example.bookmarked_android.urlEncoder
+import com.example.bookmarked_android.utils.urlDecoder
+import com.example.bookmarked_android.utils.urlEncoder
 import kotlinx.coroutines.launch
 
 /**

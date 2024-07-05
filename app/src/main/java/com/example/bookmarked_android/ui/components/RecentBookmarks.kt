@@ -37,7 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bookmarked_android.R
-import com.example.bookmarked_android.maxCharacters
+import com.example.bookmarked_android.utils.maxCharacters
 import com.example.bookmarked_android.model.BookmarkItem
 import com.example.bookmarked_android.navigation.DetailScreenParams
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
@@ -111,7 +111,7 @@ fun SharedTransitionScope.RecentBookmarkItem(
             modifier.matchParentSize(),
             cornerRadius = 28.dp,
             innerRadius = 48.dp,
-            filledColor = MaterialTheme.colorScheme.inverseOnSurface.copy(.75f)
+            filledColor = MaterialTheme.colorScheme.inverseOnSurface.copy(.8f)
         )
         Column(
             Modifier.padding(24.dp)
