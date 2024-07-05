@@ -54,19 +54,19 @@ import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
 import com.example.bookmarked_android.utils.verticalScrollBar
 
-val types = listOf("Tweet", "Thread")
-
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun FilterBottomSheet(
     onDismissRequest: () -> Unit,
     sheetState: SheetState = rememberModalBottomSheetState(),
-    viewModel: TagsFilterViewModel = viewModel()
+    tagsViewModel: TagsFilterViewModel = viewModel(),
+    filterViewModel: FilterViewModel = viewModel(),
 ) {
     val spacerModifier = Modifier.height(12.dp)
-    val tags = viewModel.tagOptions.collectAsState().value
-
+    val tags = tagsViewModel.tagOptions.collectAsState().value
     var isExpanded by remember { mutableStateOf(false) }
+
+    val selectedType = filterViewModel.selectedType.collectAsState().value
 
     ModalBottomSheet(
         sheetState = sheetState,
@@ -85,11 +85,14 @@ fun FilterBottomSheet(
              */
             Text("Type")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                types.forEach {
+                bookmarkTypes.forEach {
+                    val isTypeSelected = it.name == selectedType
                     FilterChip(
-                        selected = false,
-                        onClick = { /*TODO*/ },
-                        label = { Text(it, fontSize = 16.sp) })
+                        selected = isTypeSelected,
+                        onClick = {
+                            if (!isTypeSelected) filterViewModel.selectType(it) else filterViewModel.deselectType()
+                        },
+                        label = { Text(it.name, fontSize = 16.sp) })
                 }
             }
 
@@ -158,7 +161,9 @@ fun FilterBottomSheet(
                     }
                 }
                 ExposedDropdownMenu(
-                    modifier = Modifier.heightIn(0.dp, 300.dp).verticalScrollBar(dropdownScrollState),
+                    modifier = Modifier
+                        .heightIn(0.dp, 300.dp)
+                        .verticalScrollBar(dropdownScrollState),
                     scrollState = dropdownScrollState,
                     expanded = isExpanded,
                     onDismissRequest = { isExpanded = false }) {
