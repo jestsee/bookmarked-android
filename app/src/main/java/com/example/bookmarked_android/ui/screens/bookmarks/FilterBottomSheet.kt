@@ -1,10 +1,13 @@
 package com.example.bookmarked_android.ui.screens.bookmarks
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -17,8 +20,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -26,15 +31,14 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,18 +62,14 @@ import com.example.bookmarked_android.utils.verticalScrollBar
 @OptIn(ExperimentalMaterial3Api::class)
 fun FilterBottomSheet(
     onDismissRequest: () -> Unit,
-    sheetState: SheetState = rememberModalBottomSheetState(),
     tagsViewModel: TagsFilterViewModel = viewModel(),
     filterViewModel: FilterViewModel = viewModel(),
 ) {
     val spacerModifier = Modifier.height(12.dp)
-    val tags = tagsViewModel.tagOptions.collectAsState().value
-    var isExpanded by remember { mutableStateOf(false) }
 
-    val selectedType = filterViewModel.selectedType.collectAsState().value
+    val selectedType by filterViewModel.selectedType.collectAsState()
 
     ModalBottomSheet(
-        sheetState = sheetState,
         onDismissRequest = onDismissRequest,
     ) {
         Column(
@@ -95,87 +95,139 @@ fun FilterBottomSheet(
                         label = { Text(it.name, fontSize = 16.sp) })
                 }
             }
-
-            /**
-             * Tags
-             */
             Spacer(modifier = spacerModifier)
-            Text("Tags")
-            Spacer(modifier = Modifier.height(4.dp))
-            ExposedDropdownMenuBox(
-                expanded = isExpanded,
-                onExpandedChange = { isExpanded = !isExpanded }) {
-                val dropdownScrollState = rememberScrollState()
-
-                Row(
-                    modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .background(
-                                color = MaterialTheme.colorScheme.inverseSurface.copy(.05f),
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                    ) {
-                        TextField(
-                            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryEditable),
-                            placeholder = { Text("Select tags") },
-                            trailingIcon = {
-                                IconButton(onClick = { isExpanded = !isExpanded }) {
-                                    Icon(
-                                        modifier = Modifier.size(20.dp),
-                                        imageVector = if (!isExpanded) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.KeyboardArrowUp,
-                                        //                                    painter = painterResource(id = R.drawable.icon_search),
-                                        contentDescription = "Search"
-                                    )
-                                }
-                            },
-                            value = "",
-                            onValueChange = {},
-                            colors = TextFieldDefaults.colors(
-                                disabledTextColor = Color.Transparent,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
-                                disabledIndicatorColor = Color.Transparent,
-                                unfocusedContainerColor = Color.Transparent,
-                                focusedContainerColor = Color.Transparent
-                            )
-                        )
-                    }
-                    IconButton(
-                        modifier = Modifier
-                            .background(
-                                color = Primary.copy(.75f),
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .fillMaxHeight()
-                            .aspectRatio(1f),
-                        onClick = { /*TODO*/ }) {
-                        Icon(
-                            painterResource(id = R.drawable.icon_trash_bin),
-                            contentDescription = "Clear tags",
-                            modifier = Modifier.size(28.dp),
-                        )
-                    }
-                }
-                ExposedDropdownMenu(
-                    modifier = Modifier
-                        .heightIn(0.dp, 300.dp)
-                        .verticalScrollBar(dropdownScrollState),
-                    scrollState = dropdownScrollState,
-                    expanded = isExpanded,
-                    onDismissRequest = { isExpanded = false }) {
-                    // TODO tags list
-                    tags.forEach {
-                        DropdownMenuItem(
-                            text = { Text(it.name) },
-                            onClick = { /*TODO*/ })
-                    }
-                }
-            }
+            TagSection(tagsViewModel)
             Spacer(spacerModifier)
+        }
+    }
+}
+
+@Composable
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
+)
+private fun TagSection(tagsViewModel: TagsFilterViewModel) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val isLoading by tagsViewModel.isLoading.collectAsState()
+    val tags by tagsViewModel.tagOptions.collectAsState()
+    val selectedTags by tagsViewModel.selectedTags.collectAsState()
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text("Tags")
+        if (selectedTags.isNotEmpty()) {
+            Text(
+                "(${selectedTags.size} selected)",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.inverseSurface.copy(.5f)
+            )
+        }
+    }
+    Spacer(modifier = Modifier.height(4.dp))
+    ExposedDropdownMenuBox(
+        expanded = isExpanded,
+        onExpandedChange = { value -> isExpanded = value }) {
+        val dropdownScrollState = rememberScrollState()
+
+        Row(
+            modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            TextField(
+                readOnly = isLoading,
+                modifier = Modifier
+                    .menuAnchor(MenuAnchorType.SecondaryEditable)
+                    .weight(1f)
+                    .background(
+                        color = MaterialTheme.colorScheme.inverseSurface.copy(.05f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+            ,
+                placeholder = { Text("Select tags") },
+                trailingIcon = {
+                    IconButton(
+                        onClick = { isExpanded = !isExpanded }) {
+                        Icon(
+                            modifier = Modifier.size(20.dp),
+                            imageVector = if (!isExpanded) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.KeyboardArrowUp,
+                            contentDescription = "Search"
+                        )
+                    }
+                },
+                leadingIcon = if (isLoading) {
+                    {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.5.dp
+                        )
+                    }
+                } else null,
+                value = tagsViewModel.searchQuery.collectAsState().value,
+                onValueChange = tagsViewModel::searchTags,
+                colors = TextFieldDefaults.colors(
+                    disabledTextColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent
+                )
+            )
+            IconButton(
+                modifier = Modifier
+                    .background(
+                        color = Primary.copy(.75f),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .fillMaxHeight()
+                    .aspectRatio(1f),
+                onClick = tagsViewModel::deselectAllTags
+            ) {
+                Icon(
+                    painterResource(id = R.drawable.icon_trash_bin),
+                    contentDescription = "Clear tags",
+                    modifier = Modifier.size(28.dp),
+                )
+            }
+        }
+        ExposedDropdownMenu(
+            modifier = Modifier
+                .heightIn(0.dp, 300.dp)
+                .verticalScrollBar(dropdownScrollState)
+            ,
+            shape = RoundedCornerShape(12.dp),
+            scrollState = dropdownScrollState,
+            expanded = isExpanded,
+            onDismissRequest = { isExpanded = false }) {
+            tags.forEach {
+                DropdownMenuItem(
+                    contentPadding = PaddingValues(horizontal = 24.dp),
+                    text = { Text(it.name) },
+                    onClick = { tagsViewModel.selectTag(it) })
+            }
+        }
+    }
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(-8.dp)
+    ) {
+        selectedTags.forEach {
+            InputChip(
+                selected = false,
+                onClick = { /*TODO*/ },
+                label = { Text(it.name, fontSize = 16.sp) },
+                trailingIcon = {
+                    Icon(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable { tagsViewModel.deselectTag(it) },
+                        imageVector = Icons.Rounded.Clear,
+                        contentDescription = "Clear ${it.name} tag"
+                    )
+                }
+            )
         }
     }
 }
@@ -199,7 +251,7 @@ private fun UpperSection() {
             Text("Filters", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         }
         TextButton(onClick = { /*TODO*/ }) {
-            Text("Clear", color = Primary, fontSize = 16.sp)
+            Text("Reset", color = Primary, fontSize = 16.sp)
         }
     }
 }

@@ -49,13 +49,13 @@ class BookmarkListViewModel : ViewModel() {
 
     init {
         fetchBookmarks()
-        observeFilter()
+        observeQuery()
     }
 
     @OptIn(FlowPreview::class)
-    private fun observeFilter() {
+    private fun observeQuery() {
         viewModelScope.launch {
-            _searchQuery.debounce(timeoutMillis = 500).collectLatest {
+            _searchQuery.debounce(timeoutMillis = 1000).collectLatest {
                 fetchBookmarks()
             }
         }
