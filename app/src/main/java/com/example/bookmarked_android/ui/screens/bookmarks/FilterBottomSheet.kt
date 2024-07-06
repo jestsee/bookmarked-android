@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -68,8 +70,10 @@ fun FilterBottomSheet(
     val spacerModifier = Modifier.height(12.dp)
 
     val selectedType by filterViewModel.selectedType.collectAsState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
+        sheetState = sheetState,
         onDismissRequest = onDismissRequest,
     ) {
         Column(
@@ -109,7 +113,7 @@ fun FilterBottomSheet(
 private fun TagSection(tagsViewModel: TagsFilterViewModel) {
     var isExpanded by remember { mutableStateOf(false) }
     val isLoading by tagsViewModel.isLoading.collectAsState()
-    val tags by tagsViewModel.tagOptions.collectAsState()
+    val tagOptions by tagsViewModel.tagOptions.collectAsState()
     val selectedTags by tagsViewModel.selectedTags.collectAsState()
 
     Row(
@@ -143,8 +147,7 @@ private fun TagSection(tagsViewModel: TagsFilterViewModel) {
                     .background(
                         color = MaterialTheme.colorScheme.inverseSurface.copy(.05f),
                         shape = RoundedCornerShape(12.dp)
-                    )
-            ,
+                    ),
                 placeholder = { Text("Select tags") },
                 trailingIcon = {
                     IconButton(
@@ -192,20 +195,29 @@ private fun TagSection(tagsViewModel: TagsFilterViewModel) {
                 )
             }
         }
-        ExposedDropdownMenu(
-            modifier = Modifier
-                .heightIn(0.dp, 300.dp)
-                .verticalScrollBar(dropdownScrollState)
-            ,
-            shape = RoundedCornerShape(12.dp),
-            scrollState = dropdownScrollState,
-            expanded = isExpanded,
-            onDismissRequest = { isExpanded = false }) {
-            tags.forEach {
-                DropdownMenuItem(
-                    contentPadding = PaddingValues(horizontal = 24.dp),
-                    text = { Text(it.name) },
-                    onClick = { tagsViewModel.selectTag(it) })
+        if (tagOptions.isNotEmpty()) {
+            ExposedDropdownMenu(
+                modifier = Modifier
+                    .heightIn(0.dp, 300.dp)
+                    .verticalScrollBar(dropdownScrollState),
+                shape = RoundedCornerShape(12.dp),
+                scrollState = dropdownScrollState,
+                expanded = isExpanded,
+                onDismissRequest = { isExpanded = false }) {
+                tagOptions.forEach { tagOption ->
+                    val toggleSelectedTag = { tagsViewModel.toggleSelectedTag(tagOption) }
+                    DropdownMenuItem(
+                        contentPadding = PaddingValues(horizontal = 24.dp),
+                        text = { Text(tagOption.tag.name) },
+                        onClick = toggleSelectedTag,
+                        trailingIcon = {
+                            Checkbox(
+                                checked = tagOption.isSelected,
+                                onCheckedChange = { toggleSelectedTag() }
+                            )
+                        }
+                    )
+                }
             }
         }
     }
@@ -217,14 +229,14 @@ private fun TagSection(tagsViewModel: TagsFilterViewModel) {
             InputChip(
                 selected = false,
                 onClick = { /*TODO*/ },
-                label = { Text(it.name, fontSize = 16.sp) },
+                label = { Text(it.tag.name, fontSize = 16.sp) },
                 trailingIcon = {
                     Icon(
                         modifier = Modifier
                             .size(20.dp)
                             .clickable { tagsViewModel.deselectTag(it) },
                         imageVector = Icons.Rounded.Clear,
-                        contentDescription = "Clear ${it.name} tag"
+                        contentDescription = "Clear ${it.tag.name} tag"
                     )
                 }
             )

@@ -1,16 +1,20 @@
 package com.example.bookmarked_android.ui.screens.bookmarks
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookmarked_android.Config
 import com.example.bookmarked_android.model.Tag
 import com.example.bookmarked_android.network.NotionApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+data class TagOption(val tag: Tag, val isSelected: Boolean)
 
 class TagsFilterViewModel : ViewModel() {
     private val config = Config()
@@ -18,32 +22,28 @@ class TagsFilterViewModel : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val allTags = MutableStateFlow(emptyList<Tag>())
-
-    private val _tagOptions = MutableStateFlow(emptyList<Tag>())
-    val tagOptions: StateFlow<List<Tag>> = _tagOptions.asStateFlow()
-
-    private val _selectedTags = MutableStateFlow(mutableListOf<Tag>())
-    val selectedTags: StateFlow<List<Tag>> = _selectedTags.asStateFlow()
-
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow() // TODO
 
     private val _isLoading = MutableStateFlow<Boolean>(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private var allTags = MutableStateFlow(emptyList<TagOption>())
+
+    val tagOptions: StateFlow<List<TagOption>>
+        get() = allTags.combine(searchQuery) { tags, query ->
+            tags.filter { it.tag.name.contains(query, ignoreCase = true) }
+        }.stateIn(viewModelScope, started = SharingStarted.WhileSubscribed(), emptyList())
+
+    val selectedTags: StateFlow<List<TagOption>>
+        get() = allTags.map { list ->
+            list.filter {
+                it.isSelected
+            }
+        }.stateIn(viewModelScope, started = SharingStarted.WhileSubscribed(), emptyList())
+
     init {
         fetchTags()
-        observeQuery()
-    }
-
-    private fun observeQuery() {
-        viewModelScope.launch {
-            _searchQuery.collectLatest {
-                _tagOptions.value =
-                    allTags.value.filter { tag -> tag.name.contains(it, ignoreCase = true) }
-            }
-        }
     }
 
     private fun fetchTags() {
@@ -56,8 +56,7 @@ class TagsFilterViewModel : ViewModel() {
                     "Bearer ${config.notionSecret}",
                     config.databaseId
                 )
-                allTags.value = response.results
-                _tagOptions.value = response.results
+                allTags.value = response.results.map { TagOption(it, false) }.toMutableList()
             } catch (e: Exception) {
                 _error.value = e.message
             } finally {
@@ -66,17 +65,27 @@ class TagsFilterViewModel : ViewModel() {
         }
     }
 
-    fun selectTag(tag: Tag) {
-        _selectedTags.value.add(tag)
+    private fun updateSelectedValueTag(tag: TagOption, value: Boolean) {
+        allTags.value = allTags.value.map {
+            if (it.tag.id == tag.tag.id) {
+                return@map it.copy(isSelected = value)
+            }
+            it
+        }
     }
 
-    fun deselectTag(tag: Tag) {
-        Log.d("TAG", "deselectTag: masok ${tag.name}")
-        _selectedTags.value.remove(tag)
+    fun toggleSelectedTag(tag: TagOption) {
+        updateSelectedValueTag(tag, !tag.isSelected)
+    }
+
+    fun deselectTag(tag: TagOption) {
+        updateSelectedValueTag(tag, false)
     }
 
     fun deselectAllTags() {
-        _selectedTags.value.clear()
+        allTags.value = allTags.value.map {
+            it.copy(isSelected = false)
+        }.toMutableList()
     }
 
     fun searchTags(query: String) {
