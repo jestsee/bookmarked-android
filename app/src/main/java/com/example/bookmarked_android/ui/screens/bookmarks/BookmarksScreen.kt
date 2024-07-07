@@ -12,7 +12,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.R
-import com.example.bookmarked_android.utils.isReachedTop
 import com.example.bookmarked_android.model.BookmarkItem
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
 import com.example.bookmarked_android.ui.components.ScrollToTop
@@ -55,6 +53,7 @@ import com.example.bookmarked_android.ui.components.SearchBar
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Purple
+import com.example.bookmarked_android.utils.isReachedTop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -68,11 +67,7 @@ fun SharedTransitionScope.BookmarksScreen(
 ) {
     val bookmarksScope = remember {
         BookmarksScreenImpl(
-            navController,
-            viewModel,
-            topPadding,
-            animatedVisibilityScope,
-            this
+            navController, viewModel, topPadding, animatedVisibilityScope, this
         )
     }
 
@@ -88,16 +83,12 @@ private fun BookmarksScreenImpl.BookmarksListContainer(isScrollingUp: Boolean) {
     val error by viewModel.error.collectAsState()
 
     PullToRefreshBox(
-        isRefreshing = isLoading,
-        onRefresh = viewModel::fetchBookmarks
+        isRefreshing = isLoading, onRefresh = viewModel::fetchBookmarks
     ) {
         if (error != null) return@PullToRefreshBox Text(text = "Error")
 
         this@BookmarksListContainer.BookmarkList(
-            bookmarkList,
-            isLoading,
-            isLoadingMore,
-            isScrollingUp
+            bookmarkList, isLoading, isLoadingMore, isScrollingUp
         )
     }
 }
@@ -107,10 +98,7 @@ internal fun LazyListState.isReachedBottom(buffer: Int = 1): Boolean {
     return lastVisibleItem?.index != 0 && lastVisibleItem?.index == this.layoutInfo.totalItemsCount - buffer
 }
 
-@OptIn(
-    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalLayoutApi::class
-)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BookmarksScreenImpl.BookmarkList(
     bookmarkList: List<BookmarkItem>,
@@ -118,11 +106,15 @@ private fun BookmarksScreenImpl.BookmarkList(
     isLoadingMore: Boolean,
     isScrollingUp: Boolean,
     listState: LazyListState = rememberLazyListState(),
-    coroutineScope: CoroutineScope = rememberCoroutineScope()
+    coroutineScope: CoroutineScope = rememberCoroutineScope(),
+    tagsViewModel: FilterTagsViewModel = viewModel(),
+    typeViewModel: FilterTypeViewModel = viewModel(),
 ) {
-    var showFilterBottomSheet by remember { mutableStateOf(true) }
+    var showFilterBottomSheet by remember { mutableStateOf(false) }
     val isReachedBottom by remember { derivedStateOf { listState.isReachedBottom() } }
     val hasMoreData = viewModel.hasMore.collectAsState().value
+
+    viewModel.injectFilterViewModel(typeViewModel, tagsViewModel)
 
     LaunchedEffect(isReachedBottom, hasMoreData) {
         if (isReachedBottom && hasMoreData) viewModel.fetchMoreBookmarks()
@@ -149,8 +141,7 @@ private fun BookmarksScreenImpl.BookmarkList(
                             .padding(top = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        SearchBar(
-                            value = viewModel.searchQuery.collectAsState().value,
+                        SearchBar(value = viewModel.searchQuery.collectAsState().value,
                             onChange = viewModel::setSearch,
                             onClear = { viewModel.setSearch("") },
                             trailing = {
@@ -161,8 +152,7 @@ private fun BookmarksScreenImpl.BookmarkList(
                                         contentDescription = "Filter"
                                     )
                                 }
-                            }
-                        )
+                            })
                     }
                 }
             }
@@ -187,35 +177,36 @@ private fun BookmarksScreenImpl.BookmarkList(
             }
         }
 
-        ScrollToTop(
-            modifier = Modifier.align(Alignment.BottomEnd),
+        ScrollToTop(modifier = Modifier.align(Alignment.BottomEnd),
             buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING),
             visible = isScrollingUp && !listState.isReachedTop(),
             onClick = {
                 coroutineScope.launch {
                     listState.scrollToItem(index = 0)
                 }
-            }
-        )
+            })
 
         if (showFilterBottomSheet) {
-            FilterBottomSheet(onDismissRequest = { showFilterBottomSheet = false })
+            FilterBottomSheet(
+                tagsViewModel = tagsViewModel,
+                filterTypeViewModel = typeViewModel,
+                onDismissRequest = {
+                    showFilterBottomSheet = false
+                    viewModel.fetchBookmarks()
+                })
         }
     }
 }
 
 private fun LazyListScope.bookmarkListComposable(
-    bookmarkList: List<BookmarkItem>,
-    bookmarksScreenImpl: BookmarksScreenImpl
+    bookmarkList: List<BookmarkItem>, bookmarksScreenImpl: BookmarksScreenImpl
 ) {
     items(bookmarkList) { item ->
-        bookmarksScreenImpl.RecentBookmarkItem(
-            item = item,
+        bookmarksScreenImpl.RecentBookmarkItem(item = item,
             animatedVisibilityScope = bookmarksScreenImpl.animatedVisibilityScope,
             shouldAnimate = true,
             modifier = Modifier.clickable {
                 bookmarksScreenImpl.onNavigateToDetail(item)
-            }
-        )
+            })
     }
 }

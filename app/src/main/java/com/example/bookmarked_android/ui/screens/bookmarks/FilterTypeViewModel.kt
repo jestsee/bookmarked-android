@@ -11,7 +11,7 @@ enum class BookmarkTypeEnum {
 
 val bookmarkTypes = BookmarkTypeEnum.entries.map { it }
 
-class FilterViewModel: ViewModel() {
+class FilterTypeViewModel: ViewModel() {
     private val _selectedType = MutableStateFlow<String?>(null)
     val selectedType: StateFlow<String?> = _selectedType.asStateFlow()
 
