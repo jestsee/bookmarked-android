@@ -190,10 +190,12 @@ private fun BookmarksScreenImpl.BookmarkList(
             FilterBottomSheet(
                 tagsViewModel = tagsViewModel,
                 filterTypeViewModel = typeViewModel,
-                onDismissRequest = {
-                    showFilterBottomSheet = false
+                onDismissRequest = { showFilterBottomSheet = false },
+                onApply = {
                     viewModel.fetchBookmarks()
-                })
+                    showFilterBottomSheet = false
+                }
+            )
         }
     }
 }

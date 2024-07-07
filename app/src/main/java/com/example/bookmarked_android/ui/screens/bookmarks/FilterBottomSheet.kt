@@ -23,6 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -64,6 +66,7 @@ import com.example.bookmarked_android.utils.verticalScrollBar
 @OptIn(ExperimentalMaterial3Api::class)
 fun FilterBottomSheet(
     onDismissRequest: () -> Unit,
+    onApply: () -> Unit,
     tagsViewModel: FilterTagsViewModel = viewModel(),
     filterTypeViewModel: FilterTypeViewModel = viewModel(),
 ) {
@@ -71,6 +74,11 @@ fun FilterBottomSheet(
 
     val selectedType by filterTypeViewModel.selectedType.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    val onReset = {
+        tagsViewModel.deselectAllTags()
+        filterTypeViewModel.deselectType()
+    }
 
     ModalBottomSheet(
         sheetState = sheetState,
@@ -80,10 +88,7 @@ fun FilterBottomSheet(
             modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            UpperSection(onReset = {
-                tagsViewModel.deselectAllTags()
-                filterTypeViewModel.deselectType()
-            })
+            UpperSection(onReset)
             HorizontalDivider()
             Spacer(modifier = spacerModifier)
 
@@ -104,6 +109,40 @@ fun FilterBottomSheet(
             }
             Spacer(modifier = spacerModifier)
             TagSection(tagsViewModel)
+            Spacer(spacerModifier)
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Primary.copy(.75f),
+                        contentColor = Color.White
+                    ),
+                    onClick = onApply
+                ) {
+                    Text(text = "Apply", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
+                Button(
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = MaterialTheme.colorScheme.inverseSurface.copy(.75f),
+                        containerColor = Color.DarkGray.copy(.6f)
+                    ),
+                    onClick = {
+                        onReset()
+                        onApply()
+                    },
+                ) {
+                    Text(text = "Reset", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                }
+            }
             Spacer(spacerModifier)
         }
     }
@@ -208,7 +247,7 @@ private fun TagSection(tagsViewModel: FilterTagsViewModel) {
                 expanded = isExpanded,
                 onDismissRequest = { isExpanded = false }) {
                 tagOptions.forEach { tagOption ->
-                    val toggleSelectedTag = { tagsViewModel.toggleSelectedTag(tagOption) }
+                    val toggleSelectedTag = { tagsViewModel.toggleTag(tagOption) }
                     DropdownMenuItem(
                         contentPadding = PaddingValues(horizontal = 24.dp),
                         text = { Text(tagOption.tag.name) },
@@ -237,7 +276,7 @@ private fun TagSection(tagsViewModel: FilterTagsViewModel) {
                     Icon(
                         modifier = Modifier
                             .size(20.dp)
-                            .clickable { tagsViewModel.deselectTag(it) },
+                            .clickable { tagsViewModel.toggleTag(it) },
                         imageVector = Icons.Rounded.Clear,
                         contentDescription = "Clear ${it.tag.name} tag"
                     )

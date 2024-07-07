@@ -74,12 +74,8 @@ class FilterTagsViewModel : ViewModel() {
         }
     }
 
-    fun toggleSelectedTag(tag: TagOption) {
+    fun toggleTag(tag: TagOption) {
         updateSelectedValueTag(tag, !tag.isSelected)
-    }
-
-    fun deselectTag(tag: TagOption) {
-        updateSelectedValueTag(tag, false)
     }
 
     fun deselectAllTags() {
