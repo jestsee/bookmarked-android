@@ -44,7 +44,9 @@ interface NotionApiService {
         @Header("Authorization") token: String,
         @Path("databaseId") databaseId: String,
         @Query("startCursor") startCursor: String? = null,
-        @Query("search") search: String? = null
+        @Query("search") search: String? = null,
+        @Query("type") type: String? = null,
+        @Query("tags") tags: List<String>? = null,
     ): BookmarkListResponse
 
     @GET("bookmarks/{pageId}/detail")

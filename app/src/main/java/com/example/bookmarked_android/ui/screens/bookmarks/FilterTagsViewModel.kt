@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 data class TagOption(val tag: Tag, val isSelected: Boolean)
 
-class TagsFilterViewModel : ViewModel() {
+class FilterTagsViewModel : ViewModel() {
     private val config = Config()
 
     private val _searchQuery = MutableStateFlow("")
@@ -25,7 +25,7 @@ class TagsFilterViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow() // TODO
 
-    private val _isLoading = MutableStateFlow<Boolean>(false)
+    private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private var allTags = MutableStateFlow(emptyList<TagOption>())
@@ -40,7 +40,7 @@ class TagsFilterViewModel : ViewModel() {
             list.filter {
                 it.isSelected
             }
-        }.stateIn(viewModelScope, started = SharingStarted.WhileSubscribed(), emptyList())
+        }.stateIn(viewModelScope, started = SharingStarted.Eagerly, emptyList())
 
     init {
         fetchTags()
@@ -90,5 +90,9 @@ class TagsFilterViewModel : ViewModel() {
 
     fun searchTags(query: String) {
         _searchQuery.value = query
+    }
+
+    fun getSelectedTags(): List<String> {
+        return allTags.value.filter { it.isSelected  }.map { it.tag.name }
     }
 }

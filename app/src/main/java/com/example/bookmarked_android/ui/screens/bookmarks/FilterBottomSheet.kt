@@ -64,12 +64,12 @@ import com.example.bookmarked_android.utils.verticalScrollBar
 @OptIn(ExperimentalMaterial3Api::class)
 fun FilterBottomSheet(
     onDismissRequest: () -> Unit,
-    tagsViewModel: TagsFilterViewModel = viewModel(),
-    filterViewModel: FilterViewModel = viewModel(),
+    tagsViewModel: FilterTagsViewModel = viewModel(),
+    filterTypeViewModel: FilterTypeViewModel = viewModel(),
 ) {
     val spacerModifier = Modifier.height(12.dp)
 
-    val selectedType by filterViewModel.selectedType.collectAsState()
+    val selectedType by filterTypeViewModel.selectedType.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -94,7 +94,7 @@ fun FilterBottomSheet(
                     FilterChip(
                         selected = isTypeSelected,
                         onClick = {
-                            if (!isTypeSelected) filterViewModel.selectType(it) else filterViewModel.deselectType()
+                            if (!isTypeSelected) filterTypeViewModel.selectType(it) else filterTypeViewModel.deselectType()
                         },
                         label = { Text(it.name, fontSize = 16.sp) })
                 }
@@ -110,7 +110,7 @@ fun FilterBottomSheet(
 @OptIn(
     ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
 )
-private fun TagSection(tagsViewModel: TagsFilterViewModel) {
+private fun TagSection(tagsViewModel: FilterTagsViewModel) {
     var isExpanded by remember { mutableStateOf(false) }
     val isLoading by tagsViewModel.isLoading.collectAsState()
     val tagOptions by tagsViewModel.tagOptions.collectAsState()
