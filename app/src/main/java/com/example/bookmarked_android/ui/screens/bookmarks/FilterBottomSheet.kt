@@ -80,7 +80,10 @@ fun FilterBottomSheet(
             modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            UpperSection()
+            UpperSection(onReset = {
+                tagsViewModel.deselectAllTags()
+                filterTypeViewModel.deselectType()
+            })
             HorizontalDivider()
             Spacer(modifier = spacerModifier)
 
@@ -245,7 +248,7 @@ private fun TagSection(tagsViewModel: FilterTagsViewModel) {
 }
 
 @Composable
-private fun UpperSection() {
+private fun UpperSection(onReset: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -262,7 +265,7 @@ private fun UpperSection() {
             )
             Text("Filters", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
         }
-        TextButton(onClick = { /*TODO*/ }) {
+        TextButton(onClick = onReset) {
             Text("Reset", color = Primary, fontSize = 16.sp)
         }
     }
