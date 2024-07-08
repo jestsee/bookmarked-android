@@ -21,7 +21,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.bookmarked_android.R
 import com.example.bookmarked_android.data.BottomNavigationItem
 import com.example.bookmarked_android.navigation.Screen
-import com.example.bookmarked_android.ui.components.bottomNavigationBar.CustomBottomAppBar
 import com.example.bookmarked_android.ui.theme.Primary
 
 @OptIn(ExperimentalMaterial3Api::class)

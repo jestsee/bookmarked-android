@@ -110,8 +110,7 @@ fun FilterBottomSheet(
 
             item {
                 TagSection(tagsViewModel)
-                Spacer(spacerModifier)
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(Modifier.height(4.dp))
             }
 
             item {
@@ -268,9 +267,10 @@ private fun TagSection(tagsViewModel: FilterTagsViewModel) {
             }
         }
     }
+    Spacer(modifier = Modifier.height(12.dp))
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(-8.dp)
+        verticalArrangement = Arrangement.spacedBy(-6.dp)
     ) {
         selectedTags.forEach {
             InputChip(

@@ -56,7 +56,7 @@ fun NavigationHost(
     navController: NavHostController = rememberNavController(),
     startDestination: String = NavigationItem.Home.route
 ) {
-    val isScrollingUp = remember { mutableStateOf(false) }
+    val isScrollingUp = remember { mutableStateOf(false) } // TODO delete later
     val showBottomBar = remember { mutableStateOf(true) }
 
     val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()

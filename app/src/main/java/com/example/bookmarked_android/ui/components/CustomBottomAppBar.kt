@@ -1,10 +1,11 @@
-package com.example.bookmarked_android.ui.components.bottomNavigationBar
+package com.example.bookmarked_android.ui.components
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animateDecay
 import androidx.compose.animation.core.animateTo
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -23,6 +24,7 @@ import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.BottomAppBarScrollBehavior
 import androidx.compose.material3.BottomAppBarState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
@@ -52,7 +54,7 @@ fun CustomBottomAppBar(
     modifier: Modifier = Modifier,
     containerColor: Color = BottomAppBarDefaults.containerColor,
     contentColor: Color = contentColorFor(containerColor),
-    tonalElevation: Dp = BottomAppBarDefaults.ContainerElevation,
+    tonalElevation: Dp = 0.dp,
     contentPadding: PaddingValues = PaddingValues(8.dp),
     windowInsets: WindowInsets = WindowInsets(0.dp),
     scrollBehavior: BottomAppBarScrollBehavior? = null,
@@ -102,10 +104,10 @@ fun CustomBottomAppBar(
         }
         .then(appBarDragModifier)) {
         Surface(
-            //        color = containerColor,
             contentColor = contentColor,
-            tonalElevation = 0.dp,
+            tonalElevation = tonalElevation,
             shape = RoundedCornerShape(50),
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.inverseOnSurface),
             modifier =
             modifier
                 .onGloballyPositioned { coordinates ->
