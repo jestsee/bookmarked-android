@@ -3,7 +3,6 @@ package com.example.bookmarked_android.ui.screens.bookmarks
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -84,66 +84,71 @@ fun FilterBottomSheet(
         sheetState = sheetState,
         onDismissRequest = onDismissRequest,
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            UpperSection(onReset)
-            HorizontalDivider()
-            Spacer(modifier = spacerModifier)
+            item {
+                UpperSection(onReset)
+                HorizontalDivider()
+            }
 
-            /**
-             * Type
-             */
-            Text("Type")
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                bookmarkTypes.forEach {
-                    val isTypeSelected = it.name == selectedType
-                    FilterChip(
-                        selected = isTypeSelected,
+            item {
+                Text("Type")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    bookmarkTypes.forEach {
+                        val isTypeSelected = it.name == selectedType
+                        FilterChip(
+                            selected = isTypeSelected,
+                            onClick = {
+                                if (!isTypeSelected) filterTypeViewModel.selectType(it) else filterTypeViewModel.deselectType()
+                            },
+                            label = { Text(it.name, fontSize = 16.sp) })
+                    }
+                }
+            }
+
+            item {
+                TagSection(tagsViewModel)
+                Spacer(spacerModifier)
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Primary.copy(.75f),
+                            contentColor = Color.White
+                        ),
+                        onClick = onApply
+                    ) {
+                        Text(text = "Apply", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            contentColor = MaterialTheme.colorScheme.inverseSurface.copy(.75f),
+                            containerColor = Color.DarkGray.copy(.6f)
+                        ),
                         onClick = {
-                            if (!isTypeSelected) filterTypeViewModel.selectType(it) else filterTypeViewModel.deselectType()
+                            onReset()
+                            onApply()
                         },
-                        label = { Text(it.name, fontSize = 16.sp) })
+                    ) {
+                        Text(text = "Reset", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
-            Spacer(modifier = spacerModifier)
-            TagSection(tagsViewModel)
-            Spacer(spacerModifier)
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Button(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Primary.copy(.75f),
-                        contentColor = Color.White
-                    ),
-                    onClick = onApply
-                ) {
-                    Text(text = "Apply", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                }
-                Button(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = MaterialTheme.colorScheme.inverseSurface.copy(.75f),
-                        containerColor = Color.DarkGray.copy(.6f)
-                    ),
-                    onClick = {
-                        onReset()
-                        onApply()
-                    },
-                ) {
-                    Text(text = "Reset", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            Spacer(spacerModifier)
+
         }
     }
 }

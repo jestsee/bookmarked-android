@@ -1,22 +1,14 @@
 package com.example.bookmarked_android.ui.components
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomAppBarScrollBehavior
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -29,12 +21,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.bookmarked_android.R
 import com.example.bookmarked_android.data.BottomNavigationItem
 import com.example.bookmarked_android.navigation.Screen
+import com.example.bookmarked_android.ui.components.bottomNavigationBar.CustomBottomAppBar
 import com.example.bookmarked_android.ui.theme.Primary
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavigationBar(
-    visible: Boolean,
     navController: NavController,
+    scrollBehavior: BottomAppBarScrollBehavior
 ) {
     val items = listOf(
         BottomNavigationItem(title = "Home", iconId = R.drawable.icon_home, Screen.HOME.name),
@@ -43,37 +37,36 @@ fun BottomNavigationBar(
             iconId = R.drawable.icon_bookmark,
             Screen.BOOKMARK_LIST.name
         ),
-        BottomNavigationItem(title = "Profile", iconId = R.drawable.icon_profile, Screen.PROFILE.name)
+        BottomNavigationItem(
+            title = "Profile",
+            iconId = R.drawable.icon_profile,
+            Screen.PROFILE.name
+        )
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    AnimatedVisibility(
-        visible = visible,
-        enter = slideInVertically(initialOffsetY = { it }),
-        exit = slideOutVertically(targetOffsetY = { it }),
-    ) {
-        CustomAppBar {
-            items.forEach { item ->
-                CustomNavigationItem(item = item, selected = currentRoute == item.route,
-                    onClick = {
-                        navController.navigate(item.route) {
-                            navController.graph.startDestinationRoute?.let { route ->
-                                popUpTo(route) {
-                                    saveState = true
-                                }
+    CustomBottomAppBar(scrollBehavior = scrollBehavior) {
+        items.forEach { item ->
+            CustomNavigationItem(item = item, selected = currentRoute == item.route,
+                onClick = {
+                    navController.navigate(item.route) {
+                        navController.graph.startDestinationRoute?.let { route ->
+                            popUpTo(route) {
+                                saveState = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
+                        launchSingleTop = true
+                        restoreState = true
                     }
-                )
-            }
-
+                }
+            )
         }
+
     }
 }
+
 
 @Composable
 private fun CustomNavigationItem(
@@ -99,34 +92,5 @@ private fun CustomNavigationItem(
             tint = MaterialTheme.colorScheme.onSurface
 //                        tint = if (selectedIndex == index) Primary else MaterialTheme.colorScheme.onSurface
         )
-    }
-}
-
-@Composable
-fun CustomAppBar(
-    modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 24.dp)
-    ) {
-        Surface(
-//            tonalElevation = 0.dp,
-            modifier = modifier
-                .clip(RoundedCornerShape(50))
-                .align(Alignment.Center)
-        ) {
-            Row(
-                Modifier.padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(
-                    20.dp,
-                    alignment = Alignment.CenterHorizontally
-                ),
-                verticalAlignment = Alignment.CenterVertically,
-                content = content
-            )
-        }
     }
 }
