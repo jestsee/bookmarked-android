@@ -1,4 +1,4 @@
-package com.example.bookmarked_android.ui.components
+package com.example.bookmarked_android.ui.components.bottom_navigation_bar
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationState
@@ -9,15 +9,9 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BottomAppBarDefaults
@@ -35,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -55,10 +50,10 @@ fun CustomBottomAppBar(
     containerColor: Color = BottomAppBarDefaults.containerColor,
     contentColor: Color = contentColorFor(containerColor),
     tonalElevation: Dp = 0.dp,
-    contentPadding: PaddingValues = PaddingValues(8.dp),
-    windowInsets: WindowInsets = WindowInsets(0.dp),
+    shape: Shape = RoundedCornerShape(50.dp),
+    border: BorderStroke = BorderStroke(2.dp, MaterialTheme.colorScheme.inverseOnSurface),
     scrollBehavior: BottomAppBarScrollBehavior? = null,
-    content: @Composable RowScope.() -> Unit
+    content: @Composable () -> Unit,
 ) {
     // Set up support for resizing the bottom app bar when vertically dragging the bar itself.
     val appBarDragModifier =
@@ -89,45 +84,34 @@ fun CustomBottomAppBar(
     // Compose a Surface with a Row content.
     // The height of the app bar is determined by subtracting the bar's height offset from the
     // app bar's defined constant height value (i.e. the ContainerHeight token).
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .layout { measurable, constraints ->
-            // Sets the app bar's height offset to collapse the entire bar's height when
-            // content
-            // is scrolled.
-            scrollBehavior?.state?.heightOffsetLimit =
-                -heightInDp.toPx()
+    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier
+            .layout { measurable, constraints ->
+                // Sets the app bar's height offset to collapse the entire bar's height when content is scrolled.
+                scrollBehavior?.state?.heightOffsetLimit =
+                    -heightInDp.toPx()
 
-            val placeable = measurable.measure(constraints)
-            val height = placeable.height + (scrollBehavior?.state?.heightOffset ?: 0f)
-            layout(placeable.width, height.roundToInt()) { placeable.place(0, 0) }
-        }
-        .then(appBarDragModifier)) {
-        Surface(
-            contentColor = contentColor,
-            tonalElevation = tonalElevation,
-            shape = RoundedCornerShape(50),
-            border = BorderStroke(2.dp, MaterialTheme.colorScheme.inverseOnSurface),
-            modifier =
-            modifier
-                .onGloballyPositioned { coordinates ->
-                    size = coordinates.size
-                }
-                .align(Alignment.Center)
-                .wrapContentWidth()
-                .padding(bottom = 16.dp)
-        ) {
-            Row(
-                Modifier
-                    .windowInsetsPadding(windowInsets)
-                    .padding(contentPadding),
-                horizontalArrangement = Arrangement.spacedBy(
-                    16.dp,
-                    alignment = Alignment.CenterHorizontally
-                ),
-                verticalAlignment = Alignment.CenterVertically,
-                content = content
-            )
+                val placeable = measurable.measure(constraints)
+                val height = placeable.height + (scrollBehavior?.state?.heightOffset ?: 0f)
+                layout(placeable.width, height.roundToInt()) { placeable.place(0, 0) }
+            }
+            .then(appBarDragModifier)) {
+            Surface(
+                contentColor = contentColor,
+                tonalElevation = tonalElevation,
+                shape = shape,
+                border = border,
+                modifier =
+                modifier
+                    .onGloballyPositioned { coordinates ->
+                        size = coordinates.size
+                    }
+                    .align(Alignment.Center)
+                    .wrapContentWidth()
+                    .padding(16.dp)
+            ) {
+                content()
+            }
         }
     }
 }

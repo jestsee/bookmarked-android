@@ -111,7 +111,7 @@ fun SharedTransitionScope.RecentBookmarkItem(
             modifier.matchParentSize(),
             cornerRadius = 28.dp,
             innerRadius = 48.dp,
-            filledColor = MaterialTheme.colorScheme.inverseOnSurface
+            filledColor = MaterialTheme.colorScheme.inverseOnSurface.copy(.75f)
         )
         Column(
             Modifier.padding(24.dp)

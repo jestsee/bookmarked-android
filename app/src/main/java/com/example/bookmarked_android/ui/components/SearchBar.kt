@@ -1,9 +1,7 @@
 package com.example.bookmarked_android.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,12 +14,12 @@ import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -34,34 +32,29 @@ fun SearchBar(
     value: String,
     onChange: (String) -> Unit,
     onClear: () -> Unit,
-    trailing: @Composable (() -> Unit)? = null
+    trailing: @Composable (() -> Unit)? = {
+        Icon(
+            modifier = Modifier.size(20.dp),
+            painter = painterResource(id = R.drawable.icon_search),
+            contentDescription = "Search icon"
+        )
+    },
+    leading: @Composable (() -> Unit)? = null,
+    shape: RoundedCornerShape = RoundedCornerShape(50)
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.inverseOnSurface, shape = RoundedCornerShape(40.dp)
-            )
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.inverseSurface.copy(.1f),
-                shape = RoundedCornerShape(40.dp)
-            )
-            .padding(horizontal = 4.dp),
-        contentAlignment = Alignment.Center,
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+        tonalElevation = 4.dp,
+        shape = shape,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseSurface.copy(.1f))
     ) {
         TextField(
             modifier = Modifier.fillMaxWidth(),
             value = value,
             onValueChange = onChange,
             placeholder = { Text("Search") },
-            leadingIcon = {
-                Icon(
-                    modifier = Modifier.size(20.dp),
-                    painter = painterResource(id = R.drawable.icon_search),
-                    contentDescription = "Search icon"
-                )
-            },
+            leadingIcon = leading,
             trailingIcon = {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -77,7 +70,7 @@ fun SearchBar(
                             )
                         }
                     }
-                    trailing.let{
+                    trailing.let {
                         VerticalDivider(
                             modifier = Modifier.padding(vertical = 4.dp),
                             color = MaterialTheme.colorScheme.inverseSurface.copy(.1f),

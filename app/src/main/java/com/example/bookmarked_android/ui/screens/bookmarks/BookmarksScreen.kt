@@ -2,20 +2,15 @@
 
 package com.example.bookmarked_android.ui.screens.bookmarks
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -26,8 +21,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -41,15 +34,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.bookmarked_android.R
 import com.example.bookmarked_android.model.BookmarkItem
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
 import com.example.bookmarked_android.ui.components.ScrollToTop
-import com.example.bookmarked_android.ui.components.SearchBar
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Purple
@@ -62,20 +52,22 @@ fun SharedTransitionScope.BookmarksScreen(
     navController: NavController,
     viewModel: BookmarkListViewModel = viewModel(),
     animatedVisibilityScope: AnimatedVisibilityScope,
-    isScrollingUp: Boolean = false,
 ) {
     val bookmarksScope = remember {
         BookmarksScreenImpl(
-            navController, viewModel, animatedVisibilityScope, this
+            navController,
+            viewModel,
+            animatedVisibilityScope,
+            this
         )
     }
 
-    bookmarksScope.BookmarksListContainer(isScrollingUp)
+    bookmarksScope.BookmarksListContainer()
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun BookmarksScreenImpl.BookmarksListContainer(isScrollingUp: Boolean) {
+private fun BookmarksScreenImpl.BookmarksListContainer() {
     val bookmarkList by viewModel.bookmarkList.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isLoadingMore by viewModel.isLoadingMore.collectAsState()
@@ -87,7 +79,7 @@ private fun BookmarksScreenImpl.BookmarksListContainer(isScrollingUp: Boolean) {
         if (error != null) return@PullToRefreshBox Text(text = "Error")
 
         this@BookmarksListContainer.BookmarkList(
-            bookmarkList, isLoading, isLoadingMore, isScrollingUp
+            bookmarkList, isLoading, isLoadingMore
         )
     }
 }
@@ -97,13 +89,11 @@ internal fun LazyListState.isReachedBottom(buffer: Int = 1): Boolean {
     return lastVisibleItem?.index != 0 && lastVisibleItem?.index == this.layoutInfo.totalItemsCount - buffer
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun BookmarksScreenImpl.BookmarkList(
     bookmarkList: List<BookmarkItem>,
     isLoading: Boolean,
     isLoadingMore: Boolean,
-    isScrollingUp: Boolean,
     listState: LazyListState = rememberLazyListState(),
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     tagsViewModel: FilterTagsViewModel = viewModel(),
@@ -113,23 +103,27 @@ private fun BookmarksScreenImpl.BookmarkList(
     val isReachedBottom by remember { derivedStateOf { listState.isReachedBottom() } }
     val hasMoreData = viewModel.hasMore.collectAsState().value
 
-    viewModel.injectFilterViewModel(typeViewModel, tagsViewModel)
+    LaunchedEffect(Unit) {
+        viewModel.injectFilterViewModel(typeViewModel, tagsViewModel)
+    }
 
     LaunchedEffect(isReachedBottom, hasMoreData) {
         if (isReachedBottom && hasMoreData) viewModel.fetchMoreBookmarks()
     }
 
-    Box(Modifier.padding(start = HORIZONTAL_PADDING, end = HORIZONTAL_PADDING)) {
+    Box(Modifier.padding(horizontal = HORIZONTAL_PADDING)) {
         LazyColumn(
             state = listState,
-            modifier = Modifier.fillMaxHeight().statusBarsPadding(),
+            modifier = Modifier
+                .fillMaxHeight()
+                .statusBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(bottom = BOTTOM_PADDING)
+            contentPadding = PaddingValues(top = 24.dp, bottom = BOTTOM_PADDING)
         ) {
 //            stickyHeader {
 //                AnimatedVisibility(
 //                    visible = isScrollingUp || listState.isReachedTop(),
-//                    enter = slideInVertically(initialOffsetY = { -500 }),
+//                    enter = slideInVertically(initialOffssetY = { -500 }),
 //                    exit = slideOutVertically(targetOffsetY = { -500 }),
 //                ) {
 //                    Box(
@@ -175,39 +169,39 @@ private fun BookmarksScreenImpl.BookmarkList(
         }
 
         ScrollToTop(modifier = Modifier.align(Alignment.BottomEnd),
-            buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING),
-            visible = isScrollingUp && !listState.isReachedTop(),
+            buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING * 1.5f),
+            visible = !listState.isScrollInProgress && !listState.isReachedTop(),
             onClick = {
                 coroutineScope.launch {
                     listState.scrollToItem(index = 0)
                 }
             })
-
-        AnimatedVisibility(
-            visible = isScrollingUp || listState.isReachedTop(),
-            enter = slideInVertically(initialOffsetY = { -500 }),
-            exit = slideOutVertically(targetOffsetY = { -500 }),
-        ) {
-            Box(
-                modifier = Modifier
-                    .height(84.dp)
-                    .padding(top = 12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                SearchBar(value = viewModel.searchQuery.collectAsState().value,
-                    onChange = viewModel::setSearch,
-                    onClear = { viewModel.setSearch("") },
-                    trailing = {
-                        IconButton(onClick = { showFilterBottomSheet = true }) {
-                            Icon(
-                                modifier = Modifier.size(28.dp),
-                                painter = painterResource(id = R.drawable.icon_filter),
-                                contentDescription = "Filter"
-                            )
-                        }
-                    })
-            }
-        }
+//
+//        AnimatedVisibility(
+//            visible = isScrollingUp || listState.isReachedTop(),
+//            enter = slideInVertically(initialOffsetY = { -500 }),
+//            exit = slideOutVertically(targetOffsetY = { -500 }),
+//        ) {
+//            Box(
+//                modifier = Modifier
+//                    .height(84.dp)
+//                    .padding(top = 12.dp),
+//                contentAlignment = Alignment.Center
+//            ) {
+//                SearchBar(value = viewModel.searchQuery.collectAsState().value,
+//                    onChange = viewModel::setSearch,
+//                    onClear = { viewModel.setSearch("") },
+//                    trailing = {
+//                        IconButton(onClick = { showFilterBottomSheet = true }) {
+//                            Icon(
+//                                modifier = Modifier.size(28.dp),
+//                                painter = painterResource(id = R.drawable.icon_filter),
+//                                contentDescription = "Filter"
+//                            )
+//                        }
+//                    })
+//            }
+//        }
 
     }
     if (showFilterBottomSheet) {

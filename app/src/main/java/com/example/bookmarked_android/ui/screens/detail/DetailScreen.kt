@@ -95,9 +95,9 @@ fun SharedTransitionScope.DetailScreen(
             listState
         )
         ScrollToTop(
+            visible = !listState.isScrollInProgress && !listState.isReachedTop(),
             modifier = Modifier.align(Alignment.BottomEnd),
             buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING),
-            visible = isScrollingUp && !listState.isReachedTop(),
             onClick = {
                 coroutineScope.launch {
                     listState.animateScrollToItem(index = 0)
