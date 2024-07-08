@@ -15,8 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -25,29 +23,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.bookmarked_android.ui.components.BottomNavigationBar
 import com.example.bookmarked_android.ui.components.ImageDialog
+import com.example.bookmarked_android.ui.components.bottom_navigation_bar.BottomBarContent
+import com.example.bookmarked_android.ui.components.bottom_navigation_bar.BottomBarViewModel
+import com.example.bookmarked_android.ui.components.bottom_navigation_bar.BottomNavigationBar
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarksScreen
 import com.example.bookmarked_android.ui.screens.detail.DetailScreen
 import com.example.bookmarked_android.ui.screens.home.HomeScreen
 import com.google.gson.Gson
-
-enum class Screen {
-    HOME, BOOKMARK_LIST, BOOKMARK_DETAIL, IMAGE_DETAIL, PROFILE
-}
-
-sealed class NavigationItem(val route: String) {
-    data object Home : NavigationItem(Screen.HOME.name)
-    data object BookmarkList : NavigationItem(Screen.BOOKMARK_LIST.name)
-    data object BookmarkDetail :
-        NavigationItem(Screen.BOOKMARK_DETAIL.name + "/{bookmarkId}/{params}")
-
-    data object ImageDetail :
-        NavigationItem(Screen.IMAGE_DETAIL.name + "/{imageUrl}")
-
-    data object Profile : NavigationItem(Screen.PROFILE.name)
-}
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -56,35 +40,35 @@ fun NavigationHost(
     navController: NavHostController = rememberNavController(),
     startDestination: String = NavigationItem.Home.route
 ) {
-    val isScrollingUp = remember { mutableStateOf(false) } // TODO delete later
-    val showBottomBar = remember { mutableStateOf(true) }
-
     val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
 
+    /**
+     * View model
+     */
     val bookmarkListViewModel: BookmarkListViewModel = viewModel()
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val bottomBarViewModel: BottomBarViewModel = viewModel()
 
     /**
-     * Control bottom bar visibility
+     * Adjust bottom bar visibility
      */
-    when (navBackStackEntry?.destination?.route) {
-        NavigationItem.ImageDetail.route -> {
-            showBottomBar.value = false
-        }
-
-        NavigationItem.BookmarkDetail.route -> {
-            showBottomBar.value = false
-        }
-
-        else -> {
-            showBottomBar.value = true
-        }
-    }
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    bottomBarViewModel.adjustBottomBarByRoute(navBackStackEntry?.destination?.route)
 
     Scaffold(
         Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        bottomBar = { if (showBottomBar.value) BottomNavigationBar(navController, scrollBehavior) }
+        bottomBar = {
+            when (val bottomBarContent = bottomBarViewModel.bottomBarContent) {
+                is BottomBarContent.BottomNavBar -> {
+                    BottomNavigationBar(navController, scrollBehavior)
+                }
+
+                is BottomBarContent.CustomBar -> {
+                    bottomBarContent.content()
+                }
+
+                BottomBarContent.Hidden -> {}
+            }
+        }
     ) { _ ->
         SharedTransitionLayout {
             NavHost(
@@ -107,21 +91,18 @@ fun NavigationHost(
                     BookmarksScreen(
                         navController = navController,
                         viewModel = bookmarkListViewModel,
-                        isScrollingUp = isScrollingUp.value,
-                        animatedVisibilityScope = this
+                        animatedVisibilityScope = this,
                     )
                 }
                 composable(NavigationItem.BookmarkDetail.route) { backStackEntry ->
                     val bookmarkId = backStackEntry.arguments?.getString("bookmarkId")
                     val params = backStackEntry.arguments?.getString("params")
-
                     val parsedParams = Gson().fromJson(params, DetailScreenParams::class.java)
 
                     DetailScreen(
                         navController = navController,
                         pageId = bookmarkId!!,
                         params = parsedParams,
-                        isScrollingUp = isScrollingUp.value,
                         animatedVisibilityScope = this
                     )
                 }

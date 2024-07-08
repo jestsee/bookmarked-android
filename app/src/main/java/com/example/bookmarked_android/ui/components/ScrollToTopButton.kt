@@ -29,12 +29,13 @@ fun ScrollToTop(
         SmallFloatingActionButton(
             modifier = buttonModifier,
             containerColor = MaterialTheme.colorScheme.inverseOnSurface,
-            onClick = onClick) {
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            onClick = onClick
+        ) {
             Icon(
                 modifier = Modifier.size(20.dp),
                 painter = painterResource(id = R.drawable.icon_arrow_up),
                 contentDescription = "Scroll to top button",
-                tint = MaterialTheme.colorScheme.onSurface
             )
         }
     }
