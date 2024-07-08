@@ -3,7 +3,6 @@ package com.example.bookmarked_android.ui.screens.bookmarks
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
-import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
 import com.example.bookmarked_android.model.BookmarkItem
 import com.example.bookmarked_android.navigation.DetailScreenParams
@@ -18,12 +17,10 @@ interface BookmarksScreenScope {
 class BookmarksScreenImpl(
     private val navController: NavController,
     val viewModel: BookmarkListViewModel,
-    val topPadding: Dp,
     val animatedVisibilityScope: AnimatedVisibilityScope,
     sharedTransitionScope: SharedTransitionScope,
 ) : BookmarksScreenScope,
     SharedTransitionScope by sharedTransitionScope {
-
     override fun onNavigateToDetail(item: BookmarkItem) {
         val params = DetailScreenParams(
             item.id,

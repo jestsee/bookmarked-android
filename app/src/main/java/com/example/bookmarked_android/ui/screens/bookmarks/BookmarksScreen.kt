@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -41,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -61,13 +61,12 @@ import kotlinx.coroutines.launch
 fun SharedTransitionScope.BookmarksScreen(
     navController: NavController,
     viewModel: BookmarkListViewModel = viewModel(),
-    topPadding: Dp,
     animatedVisibilityScope: AnimatedVisibilityScope,
     isScrollingUp: Boolean = false,
 ) {
     val bookmarksScope = remember {
         BookmarksScreenImpl(
-            navController, viewModel, topPadding, animatedVisibilityScope, this
+            navController, viewModel, animatedVisibilityScope, this
         )
     }
 
@@ -123,9 +122,7 @@ private fun BookmarksScreenImpl.BookmarkList(
     Box(Modifier.padding(start = HORIZONTAL_PADDING, end = HORIZONTAL_PADDING)) {
         LazyColumn(
             state = listState,
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(top = topPadding),
+            modifier = Modifier.fillMaxHeight().statusBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = BOTTOM_PADDING)
         ) {
