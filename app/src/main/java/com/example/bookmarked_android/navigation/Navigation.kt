@@ -85,7 +85,7 @@ fun NavigationHost(
     Scaffold(
         Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         bottomBar = { if (showBottomBar.value) BottomNavigationBar(navController, scrollBehavior) }
-    ) { innerPadding ->
+    ) { _ ->
         SharedTransitionLayout {
             NavHost(
                 modifier = modifier.fillMaxSize(),
@@ -99,7 +99,6 @@ fun NavigationHost(
                 composable(NavigationItem.Home.route) {
                     HomeScreen(
                         navController = navController,
-                        topPadding = innerPadding.calculateTopPadding(),
                         viewModel = bookmarkListViewModel,
                         animatedVisibilityScope = this
                     )
@@ -107,7 +106,6 @@ fun NavigationHost(
                 composable(NavigationItem.BookmarkList.route) {
                     BookmarksScreen(
                         navController = navController,
-                        topPadding = innerPadding.calculateTopPadding(),
                         viewModel = bookmarkListViewModel,
                         isScrollingUp = isScrollingUp.value,
                         animatedVisibilityScope = this
@@ -121,7 +119,6 @@ fun NavigationHost(
 
                     DetailScreen(
                         navController = navController,
-                        topPadding = innerPadding.calculateTopPadding(),
                         pageId = bookmarkId!!,
                         params = parsedParams,
                         isScrollingUp = isScrollingUp.value,

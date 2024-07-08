@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -37,7 +38,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -45,8 +45,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.bookmarked_android.R
-import com.example.bookmarked_android.utils.isReachedTop
-import com.example.bookmarked_android.utils.leftBorder
 import com.example.bookmarked_android.model.BookmarkDetail
 import com.example.bookmarked_android.model.CalloutContent
 import com.example.bookmarked_android.model.Content
@@ -62,6 +60,8 @@ import com.example.bookmarked_android.ui.theme.ASYNC_IMAGE_PLACEHOLDER
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
+import com.example.bookmarked_android.utils.isReachedTop
+import com.example.bookmarked_android.utils.leftBorder
 import com.example.bookmarked_android.utils.urlDecoder
 import com.example.bookmarked_android.utils.urlEncoder
 import kotlinx.coroutines.launch
@@ -74,7 +74,6 @@ fun SharedTransitionScope.DetailScreen(
     navController: NavController,
     pageId: String,
     params: DetailScreenParams,
-    topPadding: Dp,
     isScrollingUp: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
@@ -86,11 +85,7 @@ fun SharedTransitionScope.DetailScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Box(
-        modifier = Modifier.padding(
-            HORIZONTAL_PADDING,
-            topPadding,
-            HORIZONTAL_PADDING,
-        ),
+        modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING).statusBarsPadding(),
     ) {
         Details(
             bookmarkDetailUiState,
