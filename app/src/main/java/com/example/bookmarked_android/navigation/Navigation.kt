@@ -9,20 +9,16 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.BottomAppBarDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -53,37 +49,17 @@ sealed class NavigationItem(val route: String) {
     data object Profile : NavigationItem(Screen.PROFILE.name)
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     startDestination: String = NavigationItem.Home.route
 ) {
-    val bottomBarHeight = 64.dp
-    val bottomBarHeightPx = with(LocalDensity.current) { bottomBarHeight.roundToPx().toFloat() }
-    val bottomBarOffsetHeightPx = remember { mutableFloatStateOf(0f) }
     val isScrollingUp = remember { mutableStateOf(false) }
-    val shouldShowBottomBar = remember { mutableStateOf(true) }
     val showBottomBar = remember { mutableStateOf(true) }
 
-// connection to the nested scroll system and listen to the scroll
-// happening inside child LazyColumn
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-
-                val delta = available.y
-                val newOffset = bottomBarOffsetHeightPx.floatValue + delta
-                bottomBarOffsetHeightPx.floatValue = newOffset.coerceIn(-bottomBarHeightPx, 0f)
-                isScrollingUp.value = newOffset / 2 >= 0f
-
-                if (shouldShowBottomBar.value) showBottomBar.value = isScrollingUp.value
-
-                return Offset.Zero
-            }
-        }
-    }
+    val scrollBehavior = BottomAppBarDefaults.exitAlwaysScrollBehavior()
 
     val bookmarkListViewModel: BookmarkListViewModel = viewModel()
 
@@ -94,34 +70,22 @@ fun NavigationHost(
      */
     when (navBackStackEntry?.destination?.route) {
         NavigationItem.ImageDetail.route -> {
-            shouldShowBottomBar.value = false
             showBottomBar.value = false
         }
 
         NavigationItem.BookmarkDetail.route -> {
-            shouldShowBottomBar.value = false
             showBottomBar.value = false
         }
 
         else -> {
-            shouldShowBottomBar.value = true
             showBottomBar.value = true
         }
     }
 
     Scaffold(
-        Modifier.nestedScroll(nestedScrollConnection),
-        bottomBar = {
-            /**
-             * TODO
-             * if navBackStackEntry?.destination?.route == NavigationItem.BookmarkList.route
-             * then show the search bar
-             */
-            BottomNavigationBar(
-                showBottomBar.value,
-                navController,
-            )
-        }) { innerPadding ->
+        Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        bottomBar = { if (showBottomBar.value) BottomNavigationBar(navController, scrollBehavior) }
+    ) { innerPadding ->
         SharedTransitionLayout {
             NavHost(
                 modifier = modifier.fillMaxSize(),

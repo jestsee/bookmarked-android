@@ -129,33 +129,33 @@ private fun BookmarksScreenImpl.BookmarkList(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = BOTTOM_PADDING)
         ) {
-            stickyHeader {
-                AnimatedVisibility(
-                    visible = isScrollingUp || listState.isReachedTop(),
-                    enter = slideInVertically(initialOffsetY = { -500 }),
-                    exit = slideOutVertically(targetOffsetY = { -500 }),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .height(84.dp)
-                            .padding(top = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        SearchBar(value = viewModel.searchQuery.collectAsState().value,
-                            onChange = viewModel::setSearch,
-                            onClear = { viewModel.setSearch("") },
-                            trailing = {
-                                IconButton(onClick = { showFilterBottomSheet = true }) {
-                                    Icon(
-                                        modifier = Modifier.size(28.dp),
-                                        painter = painterResource(id = R.drawable.icon_filter),
-                                        contentDescription = "Filter"
-                                    )
-                                }
-                            })
-                    }
-                }
-            }
+//            stickyHeader {
+//                AnimatedVisibility(
+//                    visible = isScrollingUp || listState.isReachedTop(),
+//                    enter = slideInVertically(initialOffsetY = { -500 }),
+//                    exit = slideOutVertically(targetOffsetY = { -500 }),
+//                ) {
+//                    Box(
+//                        modifier = Modifier
+//                            .height(84.dp)
+//                            .padding(top = 12.dp),
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        SearchBar(value = viewModel.searchQuery.collectAsState().value,
+//                            onChange = viewModel::setSearch,
+//                            onClear = { viewModel.setSearch("") },
+//                            trailing = {
+//                                IconButton(onClick = { showFilterBottomSheet = true }) {
+//                                    Icon(
+//                                        modifier = Modifier.size(28.dp),
+//                                        painter = painterResource(id = R.drawable.icon_filter),
+//                                        contentDescription = "Filter"
+//                                    )
+//                                }
+//                            })
+//                    }
+//                }
+//            }
 
             if (isLoading) item { Text("Loading...") }
 
@@ -186,17 +186,43 @@ private fun BookmarksScreenImpl.BookmarkList(
                 }
             })
 
-        if (showFilterBottomSheet) {
-            FilterBottomSheet(
-                tagsViewModel = tagsViewModel,
-                filterTypeViewModel = typeViewModel,
-                onDismissRequest = { showFilterBottomSheet = false },
-                onApply = {
-                    viewModel.fetchBookmarks()
-                    showFilterBottomSheet = false
-                }
-            )
+        AnimatedVisibility(
+            visible = isScrollingUp || listState.isReachedTop(),
+            enter = slideInVertically(initialOffsetY = { -500 }),
+            exit = slideOutVertically(targetOffsetY = { -500 }),
+        ) {
+            Box(
+                modifier = Modifier
+                    .height(84.dp)
+                    .padding(top = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                SearchBar(value = viewModel.searchQuery.collectAsState().value,
+                    onChange = viewModel::setSearch,
+                    onClear = { viewModel.setSearch("") },
+                    trailing = {
+                        IconButton(onClick = { showFilterBottomSheet = true }) {
+                            Icon(
+                                modifier = Modifier.size(28.dp),
+                                painter = painterResource(id = R.drawable.icon_filter),
+                                contentDescription = "Filter"
+                            )
+                        }
+                    })
+            }
         }
+
+    }
+    if (showFilterBottomSheet) {
+        FilterBottomSheet(
+            tagsViewModel = tagsViewModel,
+            filterTypeViewModel = typeViewModel,
+            onDismissRequest = { showFilterBottomSheet = false },
+            onApply = {
+                viewModel.fetchBookmarks()
+                showFilterBottomSheet = false
+            }
+        )
     }
 }
 
