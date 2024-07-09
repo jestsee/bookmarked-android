@@ -48,11 +48,8 @@ class FilterViewModelFactory(private val filterTagViewModel: FilterTagsViewModel
 }
 
 fun BookmarkFilter.count(): Int {
-    return this.toString()
-        .substringAfter('(')
-        .substringBeforeLast(')')
-        .split(", ")
-        .map { with(it.split("=")) { this[0] to this[1] } }
-        .filter { it.second != "null" && it.second != "[]" }
-        .map { it.first }.size
+    var count = 0
+    if (type != null) count++
+    if (!tags.isNullOrEmpty()) count ++
+    return count
 }
