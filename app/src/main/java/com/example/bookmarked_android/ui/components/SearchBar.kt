@@ -2,6 +2,7 @@ package com.example.bookmarked_android.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,9 +21,16 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.bookmarked_android.R
 
@@ -42,15 +50,28 @@ fun SearchBar(
     },
     shape: RoundedCornerShape = RoundedCornerShape(50)
 ) {
-    Surface(
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    val heightInDp = with(LocalDensity.current) { size.height.toDp() }
+
+    Box(
         modifier = modifier.fillMaxWidth(),
-        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
-        tonalElevation = 4.dp,
-        shape = shape,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseSurface.copy(.1f))
     ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(heightInDp),
+            contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+            content = {},
+            tonalElevation = 4.dp,
+            shape = shape,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseSurface.copy(.1f))
+        )
         TextField(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    size = coordinates.size
+                },
             value = value,
             onValueChange = onChange,
             placeholder = { Text("Search") },
