@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bookmarked_android.R
+import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
 import com.example.bookmarked_android.utils.verticalScrollBar
@@ -67,18 +68,10 @@ import com.example.bookmarked_android.utils.verticalScrollBar
 fun FilterBottomSheet(
     onDismissRequest: () -> Unit,
     onApply: () -> Unit,
-    tagsViewModel: FilterTagsViewModel = viewModel(),
-    filterTypeViewModel: FilterTypeViewModel = viewModel(),
+    viewModel: FilterViewModel = viewModel(),
 ) {
-    val spacerModifier = Modifier.height(12.dp)
-
-    val selectedType by filterTypeViewModel.selectedType.collectAsState()
+    val selectedType by viewModel.selectedType.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    val onReset = {
-        tagsViewModel.deselectAllTags()
-        filterTypeViewModel.deselectType()
-    }
 
     ModalBottomSheet(
         sheetState = sheetState,
@@ -89,7 +82,7 @@ fun FilterBottomSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                UpperSection(onReset)
+                UpperSection(viewModel::resetFilter)
                 HorizontalDivider()
             }
 
@@ -101,7 +94,7 @@ fun FilterBottomSheet(
                         FilterChip(
                             selected = isTypeSelected,
                             onClick = {
-                                if (!isTypeSelected) filterTypeViewModel.selectType(it) else filterTypeViewModel.deselectType()
+                                if (!isTypeSelected) viewModel.selectType(it) else viewModel.deselectType()
                             },
                             label = { Text(it.name, fontSize = 16.sp) })
                     }
@@ -109,13 +102,15 @@ fun FilterBottomSheet(
             }
 
             item {
-                TagSection(tagsViewModel)
+                TagSection(viewModel.tagViewModel)
                 Spacer(Modifier.height(4.dp))
             }
 
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = BOTTOM_PADDING * .25f),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
@@ -126,7 +121,10 @@ fun FilterBottomSheet(
                             containerColor = Primary.copy(.75f),
                             contentColor = Color.White
                         ),
-                        onClick = onApply
+                        onClick = {
+                            viewModel.applyFilter()
+                            onApply()
+                        }
                     ) {
                         Text(text = "Apply", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     }
@@ -139,7 +137,8 @@ fun FilterBottomSheet(
                             containerColor = Color.DarkGray.copy(.6f)
                         ),
                         onClick = {
-                            onReset()
+                            viewModel.resetFilter()
+                            viewModel.applyFilter()
                             onApply()
                         },
                     ) {

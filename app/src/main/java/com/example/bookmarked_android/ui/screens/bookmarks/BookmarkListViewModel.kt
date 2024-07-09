@@ -47,8 +47,7 @@ class BookmarkListViewModel : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    private val filterTypeViewModel = MutableStateFlow<FilterTypeViewModel?>(null)
-    private val filterTagsViewModel = MutableStateFlow<FilterTagsViewModel?>(null)
+    private val filterViewModel = MutableStateFlow<FilterViewModel?>(null)
 
     init {
         fetchBookmarks()
@@ -74,13 +73,15 @@ class BookmarkListViewModel : ViewModel() {
             handleLoading(true)
 
             try {
+                val filter = filterViewModel.value?.appliedFilter?.value
+
                 val response = NotionApi.retrofitService.getBookmarks(
                     "Bearer ${config.notionSecret}",
                     config.databaseId,
                     startCursor = nextCursor.value,
                     search = _searchQuery.value,
-                    type = filterTypeViewModel.value?.selectedType?.value,
-                    tags = filterTagsViewModel.value?.getSelectedTags()
+                    type = filter?.type,
+                    tags = filter?.tags
                 )
                 _hasMore.value = response.hasMore
                 nextCursor.value = response.nextCursor
@@ -113,10 +114,8 @@ class BookmarkListViewModel : ViewModel() {
     }
 
     fun injectFilterViewModel(
-        typeViewModel: FilterTypeViewModel,
-        tagViewModel: FilterTagsViewModel
+        typeViewModel: FilterViewModel,
     ) {
-        filterTypeViewModel.value = typeViewModel
-        filterTagsViewModel.value = tagViewModel
+        filterViewModel.value = typeViewModel
     }
 }
