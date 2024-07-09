@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.bookmarked_android.R
 import com.example.bookmarked_android.data.BottomNavigationItem
@@ -66,9 +67,15 @@ fun handleNavigate(
     navController: NavController,
     item: BottomNavigationItem
 ) {
+    /**
+     * https://developer.android.com/develop/ui/compose/navigation#bottom-nav
+     */
     navController.navigate(item.route) {
-        popUpTo(navController.graph.startDestinationId)
+        popUpTo(navController.graph.findStartDestination().id) {
+            saveState = true
+        }
         launchSingleTop = true
+        restoreState = true
     }
 }
 
