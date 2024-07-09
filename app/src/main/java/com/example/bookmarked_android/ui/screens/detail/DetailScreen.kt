@@ -74,7 +74,6 @@ fun SharedTransitionScope.DetailScreen(
     navController: NavController,
     pageId: String,
     params: DetailScreenParams,
-    isScrollingUp: Boolean = false,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     val viewModel: BookmarkDetailViewModel =

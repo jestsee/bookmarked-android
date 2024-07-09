@@ -58,24 +58,7 @@ fun NavigationHost(
     }
 
     Scaffold(
-        Modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-//            .then(
-//                if (topBarViewModel.topBarContent is BarContent.CustomBar)
-//                    Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection) else Modifier
-//            ),
-//        topBar = {
-//            when (val topBarContent = topBarViewModel.topBarContent) {
-//                is BarContent.CustomBar -> {
-//                    CustomTopAppBar(scrollBehavior = topBarScrollBehavior, content = {
-//                        topBarContent.content()
-//                    })
-//                }
-//
-//                else -> {}
-//            }
-//        }
-        ,
+        Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         bottomBar = {
             when (val bottomBarContent = bottomBarViewModel.bottomBarContent) {
                 is BarContent.ShowBar -> {
