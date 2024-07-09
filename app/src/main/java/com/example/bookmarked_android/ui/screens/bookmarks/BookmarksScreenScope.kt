@@ -10,7 +10,7 @@ import com.example.bookmarked_android.navigation.Screen
 import com.example.bookmarked_android.navigation.toJson
 
 interface BookmarksScreenScope {
-    fun onNavigateToDetail(item: BookmarkItem);
+    fun onNavigateToDetail(item: BookmarkItem)
 }
 
 @OptIn(ExperimentalSharedTransitionApi::class)

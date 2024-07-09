@@ -1,4 +1,4 @@
-package com.example.bookmarked_android.ui.components.bottom_navigation_bar
+package com.example.bookmarked_android.ui.components.app_bar
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationState
@@ -63,7 +63,7 @@ fun CustomBottomAppBar(
                 state =
                 rememberDraggableState { delta -> scrollBehavior.state.heightOffset -= delta },
                 onDragStopped = { velocity ->
-                    settleAppBarBottom(
+                    settleBottomAppBar(
                         scrollBehavior.state,
                         velocity,
                         scrollBehavior.flingAnimationSpec,
@@ -117,7 +117,7 @@ fun CustomBottomAppBar(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-suspend fun settleAppBarBottom(
+private suspend fun settleBottomAppBar(
     state: BottomAppBarState,
     velocity: Float,
     flingAnimationSpec: DecayAnimationSpec<Float>?,
