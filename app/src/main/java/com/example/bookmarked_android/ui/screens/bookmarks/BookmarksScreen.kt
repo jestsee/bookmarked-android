@@ -2,6 +2,7 @@
 
 package com.example.bookmarked_android.ui.screens.bookmarks
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -21,6 +24,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -34,18 +39,28 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.bookmarked_android.R
 import com.example.bookmarked_android.model.BookmarkItem
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
 import com.example.bookmarked_android.ui.components.ScrollToTop
+import com.example.bookmarked_android.ui.components.SearchBar
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Purple
 import com.example.bookmarked_android.utils.isReachedTop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @Composable
 fun SharedTransitionScope.BookmarksScreen(
@@ -89,6 +104,7 @@ internal fun LazyListState.isReachedBottom(buffer: Int = 1): Boolean {
     return lastVisibleItem?.index != 0 && lastVisibleItem?.index == this.layoutInfo.totalItemsCount - buffer
 }
 
+@SuppressLint("AutoboxingStateCreation")
 @Composable
 private fun BookmarksScreenImpl.BookmarkList(
     bookmarkList: List<BookmarkItem>,
@@ -103,6 +119,22 @@ private fun BookmarksScreenImpl.BookmarkList(
     val isReachedBottom by remember { derivedStateOf { listState.isReachedBottom() } }
     val hasMoreData = viewModel.hasMore.collectAsState().value
 
+    val toolbarHeight = 96.dp
+    val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
+    val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+
+                val delta = available.y
+                val newOffset = toolbarOffsetHeightPx.value + delta
+                toolbarOffsetHeightPx.value = newOffset.coerceIn(-toolbarHeightPx, 0f)
+                return Offset.Zero
+            }
+        }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.injectFilterViewModel(typeViewModel, tagsViewModel)
     }
@@ -111,43 +143,19 @@ private fun BookmarksScreenImpl.BookmarkList(
         if (isReachedBottom && hasMoreData) viewModel.fetchMoreBookmarks()
     }
 
-    Box(Modifier.padding(horizontal = HORIZONTAL_PADDING)) {
+    Box(
+        Modifier
+            .padding(horizontal = HORIZONTAL_PADDING)
+            .nestedScroll(nestedScrollConnection)
+    ) {
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxHeight()
                 .statusBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(top = 24.dp, bottom = BOTTOM_PADDING)
+            contentPadding = PaddingValues(top = toolbarHeight, bottom = BOTTOM_PADDING)
         ) {
-//            stickyHeader {
-//                AnimatedVisibility(
-//                    visible = isScrollingUp || listState.isReachedTop(),
-//                    enter = slideInVertically(initialOffssetY = { -500 }),
-//                    exit = slideOutVertically(targetOffsetY = { -500 }),
-//                ) {
-//                    Box(
-//                        modifier = Modifier
-//                            .height(84.dp)
-//                            .padding(top = 12.dp),
-//                        contentAlignment = Alignment.Center
-//                    ) {
-//                        SearchBar(value = viewModel.searchQuery.collectAsState().value,
-//                            onChange = viewModel::setSearch,
-//                            onClear = { viewModel.setSearch("") },
-//                            trailing = {
-//                                IconButton(onClick = { showFilterBottomSheet = true }) {
-//                                    Icon(
-//                                        modifier = Modifier.size(28.dp),
-//                                        painter = painterResource(id = R.drawable.icon_filter),
-//                                        contentDescription = "Filter"
-//                                    )
-//                                }
-//                            })
-//                    }
-//                }
-//            }
-
             if (isLoading) item { Text("Loading...") }
 
             if (!isLoading) bookmarkListComposable(bookmarkList, this@BookmarkList)
@@ -176,32 +184,29 @@ private fun BookmarksScreenImpl.BookmarkList(
                     listState.scrollToItem(index = 0)
                 }
             })
-//
-//        AnimatedVisibility(
-//            visible = isScrollingUp || listState.isReachedTop(),
-//            enter = slideInVertically(initialOffsetY = { -500 }),
-//            exit = slideOutVertically(targetOffsetY = { -500 }),
-//        ) {
-//            Box(
-//                modifier = Modifier
-//                    .height(84.dp)
-//                    .padding(top = 12.dp),
-//                contentAlignment = Alignment.Center
-//            ) {
-//                SearchBar(value = viewModel.searchQuery.collectAsState().value,
-//                    onChange = viewModel::setSearch,
-//                    onClear = { viewModel.setSearch("") },
-//                    trailing = {
-//                        IconButton(onClick = { showFilterBottomSheet = true }) {
-//                            Icon(
-//                                modifier = Modifier.size(28.dp),
-//                                painter = painterResource(id = R.drawable.icon_filter),
-//                                contentDescription = "Filter"
-//                            )
-//                        }
-//                    })
-//            }
-//        }
+
+
+        Box(
+            modifier = Modifier
+                .height(toolbarHeight)
+                .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) }
+                .padding(top = BOTTOM_PADDING),
+            contentAlignment = Alignment.Center
+        ) {
+            SearchBar(value = viewModel.searchQuery.collectAsState().value,
+                onChange = viewModel::setSearch,
+                onClear = { viewModel.setSearch("") },
+                trailing = {
+                    IconButton(onClick = { showFilterBottomSheet = true }) {
+                        Icon(
+                            modifier = Modifier.size(28.dp),
+                            painter = painterResource(id = R.drawable.icon_filter),
+                            contentDescription = "Filter"
+                        )
+                    }
+                })
+        }
+
 
     }
     if (showFilterBottomSheet) {

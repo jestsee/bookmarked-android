@@ -1,4 +1,4 @@
-package com.example.bookmarked_android.ui.components.bottom_navigation_bar
+package com.example.bookmarked_android.ui.components.app_bar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

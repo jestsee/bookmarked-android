@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -24,9 +25,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.bookmarked_android.ui.components.ImageDialog
-import com.example.bookmarked_android.ui.components.bottom_navigation_bar.BottomBarContent
-import com.example.bookmarked_android.ui.components.bottom_navigation_bar.BottomBarViewModel
-import com.example.bookmarked_android.ui.components.bottom_navigation_bar.BottomNavigationBar
+import com.example.bookmarked_android.ui.components.app_bar.BarContent
+import com.example.bookmarked_android.ui.components.app_bar.BottomBarViewModel
+import com.example.bookmarked_android.ui.components.app_bar.BottomNavigationBar
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarkListViewModel
 import com.example.bookmarked_android.ui.screens.bookmarks.BookmarksScreen
 import com.example.bookmarked_android.ui.screens.detail.DetailScreen
@@ -52,21 +53,40 @@ fun NavigationHost(
      * Adjust bottom bar visibility
      */
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    bottomBarViewModel.adjustBottomBarByRoute(navBackStackEntry?.destination?.route)
+    LaunchedEffect(navBackStackEntry) {
+        bottomBarViewModel.adjustBottomBarByRoute(navBackStackEntry?.destination?.route)
+    }
 
     Scaffold(
-        Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+//            .then(
+//                if (topBarViewModel.topBarContent is BarContent.CustomBar)
+//                    Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection) else Modifier
+//            ),
+//        topBar = {
+//            when (val topBarContent = topBarViewModel.topBarContent) {
+//                is BarContent.CustomBar -> {
+//                    CustomTopAppBar(scrollBehavior = topBarScrollBehavior, content = {
+//                        topBarContent.content()
+//                    })
+//                }
+//
+//                else -> {}
+//            }
+//        }
+        ,
         bottomBar = {
             when (val bottomBarContent = bottomBarViewModel.bottomBarContent) {
-                is BottomBarContent.BottomNavBar -> {
+                is BarContent.ShowBar -> {
                     BottomNavigationBar(navController, scrollBehavior)
                 }
 
-                is BottomBarContent.CustomBar -> {
+                is BarContent.CustomBar -> {
                     bottomBarContent.content()
                 }
 
-                BottomBarContent.Hidden -> {}
+                BarContent.Hidden -> {}
             }
         }
     ) { _ ->

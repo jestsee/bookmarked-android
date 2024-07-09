@@ -32,14 +32,14 @@ fun SearchBar(
     value: String,
     onChange: (String) -> Unit,
     onClear: () -> Unit,
-    trailing: @Composable (() -> Unit)? = {
+    trailing: @Composable (() -> Unit)?,
+    leading: @Composable (() -> Unit)? = {
         Icon(
             modifier = Modifier.size(20.dp),
             painter = painterResource(id = R.drawable.icon_search),
             contentDescription = "Search icon"
         )
     },
-    leading: @Composable (() -> Unit)? = null,
     shape: RoundedCornerShape = RoundedCornerShape(50)
 ) {
     Surface(
