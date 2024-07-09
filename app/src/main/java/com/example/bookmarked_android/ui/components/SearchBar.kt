@@ -62,9 +62,9 @@ fun SearchBar(
                 .height(heightInDp),
             contentColor = MaterialTheme.colorScheme.inverseOnSurface,
             content = {},
-            tonalElevation = 4.dp,
+            tonalElevation = 1.dp,
             shape = shape,
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseSurface.copy(.1f))
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseSurface.copy(.075f))
         )
         TextField(
             modifier = Modifier
