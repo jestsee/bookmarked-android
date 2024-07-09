@@ -196,7 +196,7 @@ private fun BookmarksScreenImpl.BookmarkList(
         }
 
         ScrollToTop(modifier = Modifier.align(Alignment.BottomEnd),
-            buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING * 1.5f),
+            buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING * 1.5f, end = HORIZONTAL_PADDING),
             visible = !listState.isScrollInProgress && !listState.isReachedTop(),
             onClick = {
                 coroutineScope.launch {
