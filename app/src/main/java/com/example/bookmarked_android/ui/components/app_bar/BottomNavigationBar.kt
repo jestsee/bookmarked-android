@@ -67,13 +67,8 @@ fun handleNavigate(
     item: BottomNavigationItem
 ) {
     navController.navigate(item.route) {
-        navController.graph.startDestinationRoute?.let { route ->
-            popUpTo(route) {
-                saveState = true
-            }
-        }
+        popUpTo(navController.graph.startDestinationId)
         launchSingleTop = true
-        restoreState = true
     }
 }
 
