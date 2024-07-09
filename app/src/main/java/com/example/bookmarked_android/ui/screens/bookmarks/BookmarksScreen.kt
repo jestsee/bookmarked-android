@@ -25,6 +25,8 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -44,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -63,12 +66,14 @@ import com.example.bookmarked_android.ui.components.ScrollToTop
 import com.example.bookmarked_android.ui.components.SearchBar
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
+import com.example.bookmarked_android.ui.theme.Primary
 import com.example.bookmarked_android.ui.theme.Purple
 import com.example.bookmarked_android.utils.isReachedTop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.BookmarksScreen(
     navController: NavController,
@@ -211,16 +216,30 @@ private fun BookmarksScreenImpl.BookmarkList(
                 ),
             contentAlignment = Alignment.Center
         ) {
+            val appliedFilter by filterViewModel.appliedFilter.collectAsState()
+
             SearchBar(value = viewModel.searchQuery.collectAsState().value,
                 onChange = viewModel::setSearch,
                 onClear = { viewModel.setSearch("") },
                 trailing = {
-                    IconButton(onClick = { showFilterBottomSheet = true }) {
-                        Icon(
-                            modifier = Modifier.size(28.dp),
-                            painter = painterResource(id = R.drawable.icon_filter),
-                            contentDescription = "Filter"
-                        )
+                    val appliedFilterCounter = appliedFilter.count()
+                    BadgedBox(badge = {
+                        if (appliedFilterCounter > 0) {
+                            Badge(
+                                containerColor = Primary,
+                                contentColor = Color.White
+                            ) {
+                                Text(appliedFilterCounter.toString())
+                            }
+                        }
+                    }) {
+                        IconButton(onClick = { showFilterBottomSheet = true }) {
+                            Icon(
+                                modifier = Modifier.size(28.dp),
+                                painter = painterResource(id = R.drawable.icon_filter),
+                                contentDescription = "Filter"
+                            )
+                        }
                     }
                 })
         }

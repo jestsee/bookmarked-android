@@ -40,7 +40,7 @@ class FilterTagsViewModel : ViewModel() {
             list.filter {
                 it.isSelected
             }
-        }.stateIn(viewModelScope, started = SharingStarted.Eagerly, emptyList())
+        }.stateIn(viewModelScope, started = SharingStarted.WhileSubscribed(), emptyList())
 
     init {
         fetchTags()
