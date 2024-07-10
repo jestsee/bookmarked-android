@@ -8,7 +8,6 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -23,6 +22,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -91,16 +91,16 @@ fun FilterBottomSheet(
         sheetState = sheetState,
         onDismissRequest = onDismissRequest,
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier.padding(horizontal = HORIZONTAL_PADDING),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column {
+            item {
                 UpperSection(viewModel::resetFilter)
                 HorizontalDivider()
             }
 
-            Column {
+            item {
                 Text("Type")
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     bookmarkTypes.forEach {
@@ -115,12 +115,12 @@ fun FilterBottomSheet(
                 }
             }
 
-            Column {
+            item {
                 TagSection(viewModel.tagViewModel)
                 Spacer(Modifier.height(4.dp))
             }
 
-            Column {
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
