@@ -196,7 +196,10 @@ private fun BookmarksScreenImpl.BookmarkList(
         }
 
         ScrollToTop(modifier = Modifier.align(Alignment.BottomEnd),
-            buttonModifier = Modifier.padding(bottom = BOTTOM_PADDING * 1.5f, end = HORIZONTAL_PADDING),
+            buttonModifier = Modifier.padding(
+                bottom = BOTTOM_PADDING * 1.5f,
+                end = HORIZONTAL_PADDING
+            ),
             visible = !listState.isScrollInProgress && !listState.isReachedTop(),
             onClick = {
                 coroutineScope.launch {
@@ -261,7 +264,7 @@ private fun BookmarksScreenImpl.BookmarkList(
 private fun LazyListScope.bookmarkListComposable(
     bookmarkList: List<BookmarkItem>, bookmarksScreenImpl: BookmarksScreenImpl
 ) {
-    items(bookmarkList) { item ->
+    items(bookmarkList, key = { it.id }) { item ->
         bookmarksScreenImpl.RecentBookmarkItem(item = item,
             animatedVisibilityScope = bookmarksScreenImpl.animatedVisibilityScope,
             shouldAnimate = true,
