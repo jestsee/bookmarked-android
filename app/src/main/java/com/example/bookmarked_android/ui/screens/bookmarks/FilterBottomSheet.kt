@@ -5,49 +5,39 @@ import androidx.compose.animation.core.AnimationVector2D
 import androidx.compose.animation.core.Spring.StiffnessMediumLow
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.spring
-import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Clear
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -74,7 +64,6 @@ import com.example.bookmarked_android.R
 import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import com.example.bookmarked_android.ui.theme.HORIZONTAL_PADDING
 import com.example.bookmarked_android.ui.theme.Primary
-import com.example.bookmarked_android.utils.verticalScrollBar
 import kotlinx.coroutines.launch
 
 @Composable
@@ -82,6 +71,7 @@ import kotlinx.coroutines.launch
 fun FilterBottomSheet(
     onDismissRequest: () -> Unit,
     onApply: () -> Unit,
+    onClickAddTag: () -> Unit,
     viewModel: FilterViewModel = viewModel(),
 ) {
     val selectedType by viewModel.selectedType.collectAsState()
@@ -102,6 +92,7 @@ fun FilterBottomSheet(
 
             item {
                 Text("Type")
+                Spacer(modifier = Modifier.height(2.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     bookmarkTypes.forEach {
                         val isTypeSelected = it.name == selectedType
@@ -116,7 +107,7 @@ fun FilterBottomSheet(
             }
 
             item {
-                TagSection(viewModel.tagViewModel)
+                TagSection(viewModel.tagViewModel, onClickAddTag = onClickAddTag)
                 Spacer(Modifier.height(4.dp))
             }
 
@@ -142,21 +133,26 @@ fun FilterBottomSheet(
                     ) {
                         Text(text = "Apply", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                     }
-                    Button(
+                    Surface(
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            contentColor = MaterialTheme.colorScheme.inverseSurface.copy(.75f),
-                            containerColor = Color.DarkGray.copy(.6f)
-                        ),
-                        onClick = {
-                            viewModel.resetFilter()
-                            viewModel.applyFilter()
-                            onApply()
-                        },
+                        tonalElevation = 16.dp,
+                        contentColor = Primary,
                     ) {
-                        Text(text = "Reset", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        Button(
+                            contentPadding = PaddingValues(vertical = 16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = Color.White.copy(.8f)
+                            ),
+                            onClick = {
+                                viewModel.resetFilter()
+                                viewModel.applyFilter()
+                                onApply()
+                            },
+                        ) {
+                            Text(text = "Reset", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
@@ -167,12 +163,11 @@ fun FilterBottomSheet(
 
 @Composable
 @OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
+    ExperimentalLayoutApi::class,
 )
-private fun TagSection(tagsViewModel: FilterTagsViewModel) {
-    var isExpanded by remember { mutableStateOf(false) }
-    val isLoading by tagsViewModel.isLoading.collectAsState()
-    val tagOptions by tagsViewModel.tagOptions.collectAsState()
+private fun TagSection(tagsViewModel: FilterTagsViewModel, onClickAddTag: () -> Unit) {
+//    val isLoading by tagsViewModel.isLoading.collectAsState()
+//    val tagOptions by tagsViewModel.tagOptions.collectAsState()
     val selectedTags by tagsViewModel.selectedTags.collectAsState()
 
     Row(
@@ -188,124 +183,72 @@ private fun TagSection(tagsViewModel: FilterTagsViewModel) {
             )
         }
     }
-    Spacer(modifier = Modifier.height(4.dp))
-    ExposedDropdownMenuBox(
-        expanded = isExpanded,
-        onExpandedChange = { value -> isExpanded = value }) {
-        val dropdownScrollState = rememberScrollState()
 
-        Row(
-            modifier = Modifier.height(intrinsicSize = IntrinsicSize.Max),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+    if (selectedTags.isEmpty()) {
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(15),
+            contentPadding = PaddingValues(vertical = 12.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.inverseSurface.copy(.25f)),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.inverseSurface.copy(
+                    .8f
+                )
+            ),
+            onClick = onClickAddTag,
         ) {
-            TextField(
-                readOnly = isLoading,
-                modifier = Modifier
-                    .menuAnchor(MenuAnchorType.SecondaryEditable)
-                    .weight(1f)
-                    .background(
-                        color = MaterialTheme.colorScheme.inverseSurface.copy(.05f),
-                        shape = RoundedCornerShape(12.dp)
-                    ),
-                placeholder = { Text("Select tags") },
-                trailingIcon = {
-                    IconButton(
-                        onClick = { isExpanded = !isExpanded }) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = if (!isExpanded) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.KeyboardArrowUp,
-                            contentDescription = "Search"
-                        )
-                    }
-                },
-                leadingIcon = if (isLoading) {
-                    {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.5.dp
-                        )
-                    }
-                } else null,
-                value = tagsViewModel.searchQuery.collectAsState().value,
-                onValueChange = tagsViewModel::searchTags,
-                colors = TextFieldDefaults.colors(
-                    disabledTextColor = Color.Transparent,
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent
-                )
-            )
-            IconButton(
-                modifier = Modifier
-                    .background(
-                        color = Primary.copy(.75f),
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .fillMaxHeight()
-                    .aspectRatio(1f),
-                onClick = tagsViewModel::deselectAllTags
-            ) {
-                Icon(
-                    painterResource(id = R.drawable.icon_trash_bin),
-                    contentDescription = "Clear tags",
-                    modifier = Modifier.size(28.dp),
-                )
-            }
+            Icon(imageVector = Icons.Rounded.Add, contentDescription = "Add tag")
+            Spacer(modifier = Modifier.width(12.dp))
+            Text("Add tag", fontSize = 16.sp)
         }
-        if (tagOptions.isNotEmpty()) {
-            ExposedDropdownMenu(
-                modifier = Modifier
-                    .heightIn(0.dp, 300.dp)
-                    .verticalScrollBar(dropdownScrollState),
-                shape = RoundedCornerShape(12.dp),
-                scrollState = dropdownScrollState,
-                expanded = isExpanded,
-                onDismissRequest = { isExpanded = false }) {
-                tagOptions.forEach { tagOption ->
-                    val toggleSelectedTag = { tagsViewModel.toggleTag(tagOption) }
-                    DropdownMenuItem(
-                        contentPadding = PaddingValues(horizontal = 24.dp),
-                        text = { Text(tagOption.tag.name) },
-                        onClick = toggleSelectedTag,
+    } else {
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy((-4).dp)
+        ) {
+            selectedTags.forEach {
+                key(it.tag.id) {
+                    FilterChip(
+                        modifier = Modifier.customAnimatePlacement(),
+                        shape = RoundedCornerShape(50),
+                        colors = FilterChipDefaults.filterChipColors(
+                            containerColor = Color.DarkGray.copy(
+                                .6f
+                            )
+                        ),
+                        elevation = FilterChipDefaults.filterChipElevation(elevation = 20.dp),
+                        border = BorderStroke(0.dp, Color.Transparent),
+                        selected = it.isSelected,
+                        onClick = { tagsViewModel.toggleTag(it) },
+                        label = { Text(it.tag.name, fontSize = 16.sp) },
                         trailingIcon = {
-                            Checkbox(
-                                checked = tagOption.isSelected,
-                                onCheckedChange = { toggleSelectedTag() }
+                            Icon(
+                                modifier = Modifier
+                                    .size(20.dp)
+                                    .clickable { tagsViewModel.toggleTag(it) },
+                                imageVector = Icons.Rounded.Clear,
+                                contentDescription = "Clear ${it.tag.name} tag"
                             )
                         }
                     )
                 }
             }
-        }
-    }
-    Spacer(modifier = Modifier.height(12.dp))
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy((-6).dp)
-    ) {
-        selectedTags.forEach {
-//            val label = it.labelGetter()
-            key(it.tag.id) {
-                InputChip(
-                    modifier = Modifier.customAnimatePlacement(),
-                    selected = false,
-                    onClick = { /*TODO*/ },
-                    label = { Text(it.tag.name, fontSize = 16.sp) },
-                    trailingIcon = {
-                        Icon(
-                            modifier = Modifier
-                                .size(20.dp)
-                                .clickable { tagsViewModel.toggleTag(it) },
-                            imageVector = Icons.Rounded.Clear,
-                            contentDescription = "Clear ${it.tag.name} tag"
-                        )
-                    }
+            FilledTonalIconButton(
+                onClick = onClickAddTag,
+                modifier = Modifier
+                    .size(32.dp)
+                    .align(Alignment.CenterVertically)
+            ) {
+                Icon(
+                    modifier = Modifier.size(20.dp),
+                    imageVector = Icons.Rounded.Add,
+                    contentDescription = ""
                 )
             }
         }
     }
+
 }
 
 @Composable

@@ -7,9 +7,6 @@ import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,14 +41,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -130,6 +124,7 @@ private fun BookmarksScreenImpl.BookmarkList(
         viewModel(factory = remember { FilterViewModelFactory(tagsViewModel) })
 
     var showFilterBottomSheet by remember { mutableStateOf(false) }
+    var showTagsFilterBottomSheet by remember { mutableStateOf(false) }
     val isReachedBottom by remember { derivedStateOf { listState.isReachedBottom() } }
     val hasMoreData = viewModel.hasMore.collectAsState().value
 
@@ -137,13 +132,18 @@ private fun BookmarksScreenImpl.BookmarkList(
     val toolbarHeightPx = with(LocalDensity.current) { toolbarHeight.roundToPx().toFloat() }
     val toolbarOffsetHeightPx = remember { mutableStateOf(0f) }
 
+    val focusManager = LocalFocusManager.current
+
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
 
                 val delta = available.y
                 val newOffset = toolbarOffsetHeightPx.value + delta
+
                 toolbarOffsetHeightPx.value = newOffset.coerceIn(-toolbarHeightPx, 0f)
+                focusManager.clearFocus()
+
                 return Offset.Zero
             }
         }
@@ -157,11 +157,14 @@ private fun BookmarksScreenImpl.BookmarkList(
         if (isReachedBottom && hasMoreData) viewModel.fetchMoreBookmarks()
     }
 
-    Box(
-        Modifier
-            .nestedScroll(nestedScrollConnection)
-            .clearFocusOnTap()
-    ) {
+    // Determine if the LazyColumn is scrollable
+    val isScrollable by remember {
+        derivedStateOf {
+            listState.canScrollForward || listState.canScrollBackward
+        }
+    }
+
+    Box(modifier = Modifier.then(if (isScrollable) Modifier.nestedScroll(nestedScrollConnection) else Modifier)) {
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -220,8 +223,9 @@ private fun BookmarksScreenImpl.BookmarkList(
             contentAlignment = Alignment.Center
         ) {
             val appliedFilter by filterViewModel.appliedFilter.collectAsState()
+            val searchValue by viewModel.searchQuery.collectAsState()
 
-            SearchBar(value = viewModel.searchQuery.collectAsState().value,
+            SearchBar(value = searchValue,
                 onChange = viewModel::setSearch,
                 onClear = { viewModel.setSearch("") },
                 trailing = {
@@ -256,8 +260,17 @@ private fun BookmarksScreenImpl.BookmarkList(
             onApply = {
                 viewModel.fetchBookmarks()
                 showFilterBottomSheet = false
+            },
+            onClickAddTag = {
+                showTagsFilterBottomSheet = true
             }
         )
+    }
+
+    if (showTagsFilterBottomSheet) {
+        TagsFilterBottomSheet(tagViewModel = filterViewModel.tagViewModel, onDismissRequest = {
+            showTagsFilterBottomSheet = false
+        })
     }
 }
 
@@ -271,18 +284,5 @@ private fun LazyListScope.bookmarkListComposable(
             modifier = Modifier.clickable {
                 bookmarksScreenImpl.onNavigateToDetail(item)
             })
-    }
-}
-
-private fun Modifier.clearFocusOnTap(): Modifier = composed {
-    val focusManager = LocalFocusManager.current
-    Modifier.pointerInput(Unit) {
-        awaitEachGesture {
-            awaitFirstDown(pass = PointerEventPass.Initial)
-            val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
-            if (upEvent != null) {
-                focusManager.clearFocus()
-            }
-        }
     }
 }
