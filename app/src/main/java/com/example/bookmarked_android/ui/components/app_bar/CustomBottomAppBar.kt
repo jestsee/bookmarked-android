@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import com.example.bookmarked_android.ui.theme.BOTTOM_PADDING
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -108,7 +109,7 @@ fun CustomBottomAppBar(
                     }
                     .align(Alignment.Center)
                     .wrapContentWidth()
-                    .padding(16.dp)
+                    .padding(BOTTOM_PADDING)
             ) {
                 content()
             }

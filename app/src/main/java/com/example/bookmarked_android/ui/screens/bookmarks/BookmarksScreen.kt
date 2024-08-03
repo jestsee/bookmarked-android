@@ -3,6 +3,7 @@
 package com.example.bookmarked_android.ui.screens.bookmarks
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -46,9 +47,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -76,10 +79,7 @@ fun SharedTransitionScope.BookmarksScreen(
 ) {
     val bookmarksScope = remember {
         BookmarksScreenImpl(
-            navController,
-            viewModel,
-            animatedVisibilityScope,
-            this
+            navController, viewModel, animatedVisibilityScope, this
         )
     }
 
@@ -97,7 +97,20 @@ private fun BookmarksScreenImpl.BookmarksListContainer() {
     PullToRefreshBox(
         isRefreshing = isLoading, onRefresh = viewModel::fetchBookmarks
     ) {
-        if (error != null) return@PullToRefreshBox Text(text = "Error")
+        if (error != null) return@PullToRefreshBox LazyColumn(
+            Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            item {
+                Text(
+                    text = "Something went wrong\nplease pull to refresh",
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
 
         this@BookmarksListContainer.BookmarkList(
             bookmarkList, isLoading, isLoadingMore
@@ -134,6 +147,7 @@ private fun BookmarksScreenImpl.BookmarkList(
 
     val focusManager = LocalFocusManager.current
 
+    // https://developer.android.com/reference/kotlin/androidx/compose/ui/input/nestedscroll/package-summary
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -178,12 +192,12 @@ private fun BookmarksScreenImpl.BookmarkList(
                 end = HORIZONTAL_PADDING
             )
         ) {
-            if (isLoading) item { Text("Loading...") }
+            if (isLoading) item(key = "loading") { Text("Loading...") }
 
             if (!isLoading) bookmarkListComposable(bookmarkList, this@BookmarkList)
 
             if (isLoadingMore) {
-                item {
+                item(key = "loading-more") {
                     Box(Modifier.fillMaxWidth()) {
                         CircularProgressIndicator(
                             strokeWidth = 3.5.dp,
@@ -200,8 +214,7 @@ private fun BookmarksScreenImpl.BookmarkList(
 
         ScrollToTop(modifier = Modifier.align(Alignment.BottomEnd),
             buttonModifier = Modifier.padding(
-                bottom = BOTTOM_PADDING * 1.5f,
-                end = HORIZONTAL_PADDING
+                bottom = BOTTOM_PADDING * 1.5f, end = HORIZONTAL_PADDING
             ),
             visible = !listState.isScrollInProgress && !listState.isReachedTop(),
             onClick = {
@@ -211,17 +224,12 @@ private fun BookmarksScreenImpl.BookmarkList(
                 }
             })
 
-        Box(
-            modifier = Modifier
-                .height(toolbarHeight)
-                .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) }
-                .padding(
-                    top = BOTTOM_PADDING,
-                    start = HORIZONTAL_PADDING,
-                    end = HORIZONTAL_PADDING
-                ),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = Modifier
+            .height(toolbarHeight)
+            .offset { IntOffset(x = 0, y = toolbarOffsetHeightPx.value.roundToInt()) }
+            .padding(
+                top = BOTTOM_PADDING, start = HORIZONTAL_PADDING, end = HORIZONTAL_PADDING
+            ), contentAlignment = Alignment.Center) {
             val appliedFilter by filterViewModel.appliedFilter.collectAsState()
             val searchValue by viewModel.searchQuery.collectAsState()
 
@@ -233,8 +241,7 @@ private fun BookmarksScreenImpl.BookmarkList(
                     BadgedBox(badge = {
                         if (appliedFilterCounter > 0) {
                             Badge(
-                                containerColor = Primary,
-                                contentColor = Color.White
+                                containerColor = Primary, contentColor = Color.White
                             ) {
                                 Text(appliedFilterCounter.toString())
                             }
@@ -254,8 +261,7 @@ private fun BookmarksScreenImpl.BookmarkList(
 
     }
     if (showFilterBottomSheet) {
-        FilterBottomSheet(
-            viewModel = filterViewModel,
+        FilterBottomSheet(viewModel = filterViewModel,
             onDismissRequest = { showFilterBottomSheet = false },
             onApply = {
                 viewModel.fetchBookmarks()
@@ -263,8 +269,7 @@ private fun BookmarksScreenImpl.BookmarkList(
             },
             onClickAddTag = {
                 showTagsFilterBottomSheet = true
-            }
-        )
+            })
     }
 
     if (showTagsFilterBottomSheet) {
@@ -277,10 +282,21 @@ private fun BookmarksScreenImpl.BookmarkList(
 private fun LazyListScope.bookmarkListComposable(
     bookmarkList: List<BookmarkItem>, bookmarksScreenImpl: BookmarksScreenImpl
 ) {
+
     items(bookmarkList, key = { it.id }) { item ->
+        val context = LocalContext.current
         bookmarksScreenImpl.RecentBookmarkItem(item = item,
             animatedVisibilityScope = bookmarksScreenImpl.animatedVisibilityScope,
             shouldAnimate = true,
+            onRemove = {
+                bookmarksScreenImpl.viewModel.deleteBookmark(item.id, onSuccess = {
+                    Toast.makeText(context, "Bookmark successfully deleted", Toast.LENGTH_SHORT)
+                        .show()
+                }, onError = {
+                    Toast.makeText(context, "Failed to delete bookmark", Toast.LENGTH_SHORT)
+                        .show()
+                })
+            },
             modifier = Modifier.clickable {
                 bookmarksScreenImpl.onNavigateToDetail(item)
             })

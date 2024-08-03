@@ -1,5 +1,6 @@
 package com.example.bookmarked_android.ui.screens.bookmarks
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.bookmarked_android.Config
@@ -107,6 +108,23 @@ class BookmarkListViewModel : ViewModel() {
             handleLoading = { _isLoadingMore.value = it },
             handleError = { BookmarkListErrorState.FetchMoreError(it) },
             handleData = { bookmarkList.value + it })
+    }
+
+    fun deleteBookmark(pageId: String, onSuccess: () -> Unit = {}, onError: () -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                _bookmarkList.value = bookmarkList.value.filter { it.id != pageId }
+
+                NotionApi.retrofitService.deleteBookmark(
+                    "Bearer ${config.notionSecret}",
+                    pageId
+                )
+                onSuccess()
+            } catch (e: Exception) {
+                Log.d("TAG", "deleteBookmark: $e")
+                onError() // TODO: display snackbar
+            }
+        }
     }
 
     fun setSearch(query: String) {
