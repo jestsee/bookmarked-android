@@ -56,6 +56,7 @@ fun SearchBar(
     Box(
         modifier = modifier.fillMaxWidth(),
     ) {
+//        workaround so the badge doesn't get clipped by the search bar
         Surface(
             modifier = Modifier
                 .fillMaxWidth()

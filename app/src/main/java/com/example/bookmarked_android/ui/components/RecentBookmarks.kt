@@ -5,6 +5,7 @@ import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,21 +16,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,11 +50,6 @@ fun SharedTransitionScope.RecentBookmarks(
     onNavigateToDetail: (String, DetailScreenParams) -> Unit,
     animatedVisibilityScope: AnimatedVisibilityScope
 ) {
-    var pressedBookmarkId by rememberSaveable { mutableStateOf<String?>(null) }
-    val haptics = LocalHapticFeedback.current
-
-//    SectionTitle(title = "Recently bookmarked")
-//    Spacer(modifier = Modifier.size(16.dp))
     Column(
         modifier = Modifier
             .padding(horizontal = HORIZONTAL_PADDING)
@@ -79,14 +74,6 @@ fun SharedTransitionScope.RecentBookmarks(
                                 )
                             )
                         },
-                        onLongPress = {
-                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                            pressedBookmarkId = bookmark.id
-                        },
-                        onPress = {
-                            tryAwaitRelease()
-                            pressedBookmarkId = null
-                        },
                     )
                 },
                 animatedVisibilityScope = animatedVisibilityScope
@@ -96,9 +83,47 @@ fun SharedTransitionScope.RecentBookmarks(
     }
 }
 
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun SharedTransitionScope.RecentBookmarkItem(
+    item: BookmarkItem,
+    modifier: Modifier,
+    shouldAnimate: Boolean = false,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onRemove: (() -> Unit)? = null
+) {
+    if (onRemove != null) {
+        val dismissState = rememberSwipeToDismissBoxState(
+            confirmValueChange = {
+                when (it) {
+                    SwipeToDismissBoxValue.Settled -> return@rememberSwipeToDismissBoxState false
+                    else -> {
+                        onRemove()
+                        return@rememberSwipeToDismissBoxState true
+                    }
+                }
+            },
+            // positional threshold of 25%
+            positionalThreshold = { it * .25f }
+        )
+
+        return SwipeToDismissBox(
+            state = dismissState,
+            modifier = modifier
+                .clip(RoundedCornerShape(28.dp, 20.dp, 28.dp, 28.dp)),
+            backgroundContent = { DismissBackground(dismissState) },
+            content = {
+                RecentBookmarkItemContent(item, modifier, shouldAnimate, animatedVisibilityScope)
+            })
+    }
+
+    return RecentBookmarkItemContent(item, modifier, shouldAnimate, animatedVisibilityScope)
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+fun SharedTransitionScope.RecentBookmarkItemContent(
     item: BookmarkItem,
     modifier: Modifier,
     shouldAnimate: Boolean = false,
@@ -106,13 +131,18 @@ fun SharedTransitionScope.RecentBookmarkItem(
 ) {
     val uriHandler = LocalUriHandler.current
 
-    Box(Modifier.fillMaxWidth()) {
-        CustomShapeBox(
-            modifier.matchParentSize(),
-            cornerRadius = 28.dp,
-            innerRadius = 48.dp,
-            filledColor = MaterialTheme.colorScheme.inverseOnSurface.copy(.75f)
-        )
+    Box(
+        modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(28.dp, 20.dp, 28.dp, 28.dp))
+            .background(MaterialTheme.colorScheme.inverseOnSurface)
+    ) {
+//        CustomShapeBox(
+//            modifier.matchParentSize(),
+//            cornerRadius = 28.dp,
+//            innerRadius = 48.dp,
+//            filledColor = MaterialTheme.colorScheme.inverseOnSurface.copy(.75f)
+//        )
         Column(
             Modifier.padding(24.dp)
         ) {
@@ -158,6 +188,7 @@ fun SharedTransitionScope.RecentBookmarkItem(
         }
         IconButton(
             modifier = Modifier
+                .padding(20.dp)
                 .size(36.dp)
                 .align(Alignment.TopEnd),
             onClick = {

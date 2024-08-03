@@ -11,6 +11,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
@@ -54,6 +55,12 @@ interface NotionApiService {
         @Header("Authorization") token: String,
         @Path("pageId") pageId: String,
     ): List<BookmarkDetail>
+
+    @DELETE("bookmarks/{pageId}")
+    suspend fun deleteBookmark(
+        @Header("Authorization") token: String,
+        @Path("pageId") pageId: String,
+    )
 
     @GET("bookmarks/{databaseId}/tags")
     suspend fun getTags(
