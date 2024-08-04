@@ -3,6 +3,7 @@ package com.example.bookmarked_android.ui.components
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -24,7 +25,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -36,6 +39,11 @@ fun SharedTransitionScope.ImageDialog(
     url: String, animatedVisibilityScope: AnimatedVisibilityScope
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
+    val animatedScale by animateFloatAsState(
+        targetValue = scale,
+        label = "animate-scale"
+    )
+
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
     var imageSize by remember { mutableStateOf(IntSize.Zero) }
@@ -43,13 +51,20 @@ fun SharedTransitionScope.ImageDialog(
     val minScale = 1f
     val maxScale = 3f
 
+    // current screen height
+    val configuration = LocalConfiguration.current
+    val screenHeightDp = configuration.screenHeightDp
+    // Convert dp to pixels if needed
+    val density = LocalDensity.current.density
+    val screenHeightPx = screenHeightDp * density
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
             .graphicsLayer(
-                scaleX = maxOf(minScale, minOf(maxScale, scale)),
-                scaleY = maxOf(minScale, minOf(maxScale, scale)),
+                scaleX = maxOf(minScale, minOf(maxScale, animatedScale)),
+                scaleY = maxOf(minScale, minOf(maxScale, animatedScale)),
                 translationX = offsetX,
                 translationY = offsetY
             )
@@ -62,7 +77,9 @@ fun SharedTransitionScope.ImageDialog(
                         val maxY = (imageSize.height * (scale - 1)) / 2
 
                         offsetX = (offsetX + pan.x * scale).coerceIn(-maxX, maxX)
-//                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
+                        if (screenHeightPx <= imageSize.height * scale) {
+                            offsetY = (offsetY + pan.y * scale).coerceIn(-maxY, maxY)
+                        }
                         return@detectTransformGestures
                     }
                     offsetX = 0f

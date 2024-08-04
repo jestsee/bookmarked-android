@@ -3,10 +3,10 @@
 package com.example.bookmarked_android.ui.screens.bookmarks
 
 import android.annotation.SuppressLint
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,7 +47,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -58,6 +57,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.bookmarked_android.R
 import com.example.bookmarked_android.model.BookmarkItem
+import com.example.bookmarked_android.navigation.LocalSnackbarHostState
 import com.example.bookmarked_android.ui.components.RecentBookmarkItem
 import com.example.bookmarked_android.ui.components.ScrollToTop
 import com.example.bookmarked_android.ui.components.SearchBar
@@ -188,7 +188,6 @@ private fun BookmarksScreenImpl.BookmarkList(
             contentPadding = PaddingValues(
                 top = toolbarHeight,
                 bottom = BOTTOM_PADDING,
-                start = HORIZONTAL_PADDING,
                 end = HORIZONTAL_PADDING
             )
         ) {
@@ -279,25 +278,20 @@ private fun BookmarksScreenImpl.BookmarkList(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 private fun LazyListScope.bookmarkListComposable(
     bookmarkList: List<BookmarkItem>, bookmarksScreenImpl: BookmarksScreenImpl
 ) {
 
     items(bookmarkList, key = { it.id }) { item ->
-        val context = LocalContext.current
+        val snackbarHostState = LocalSnackbarHostState.current
         bookmarksScreenImpl.RecentBookmarkItem(item = item,
             animatedVisibilityScope = bookmarksScreenImpl.animatedVisibilityScope,
             shouldAnimate = true,
             onRemove = {
-                bookmarksScreenImpl.viewModel.deleteBookmark(item.id, onSuccess = {
-                    Toast.makeText(context, "Bookmark successfully deleted", Toast.LENGTH_SHORT)
-                        .show()
-                }, onError = {
-                    Toast.makeText(context, "Failed to delete bookmark", Toast.LENGTH_SHORT)
-                        .show()
-                })
+                bookmarksScreenImpl.viewModel.deleteBookmark(item.id, snackbarHostState)
             },
-            modifier = Modifier.clickable {
+            modifier = Modifier.animateItem().clickable {
                 bookmarksScreenImpl.onNavigateToDetail(item)
             })
     }

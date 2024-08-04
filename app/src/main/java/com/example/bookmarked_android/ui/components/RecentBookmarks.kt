@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -93,28 +94,32 @@ fun SharedTransitionScope.RecentBookmarkItem(
     animatedVisibilityScope: AnimatedVisibilityScope,
     onRemove: (() -> Unit)? = null
 ) {
+
     if (onRemove != null) {
         val dismissState = rememberSwipeToDismissBoxState(
             confirmValueChange = {
-                when (it) {
-                    SwipeToDismissBoxValue.Settled -> return@rememberSwipeToDismissBoxState false
-                    else -> {
-                        onRemove()
-                        return@rememberSwipeToDismissBoxState true
-                    }
+                if (it == SwipeToDismissBoxValue.Settled) {
+                    return@rememberSwipeToDismissBoxState false
                 }
+                onRemove()
+                return@rememberSwipeToDismissBoxState true
             },
-            // positional threshold of 25%
-            positionalThreshold = { it * .25f }
         )
 
         return SwipeToDismissBox(
+            modifier = modifier,
             state = dismissState,
-            modifier = modifier
-                .clip(RoundedCornerShape(28.dp, 20.dp, 28.dp, 28.dp)),
-            backgroundContent = { DismissBackground(dismissState) },
+            backgroundContent = {},
+            enableDismissFromStartToEnd = false,
             content = {
-                RecentBookmarkItemContent(item, modifier, shouldAnimate, animatedVisibilityScope)
+                Spacer(modifier = Modifier.width(HORIZONTAL_PADDING))
+                RecentBookmarkItemContent(
+                    item,
+                    Modifier,
+                    shouldAnimate,
+                    animatedVisibilityScope
+                )
+//                Spacer(modifier = Modifier.width(HORIZONTAL_PADDING))
             })
     }
 

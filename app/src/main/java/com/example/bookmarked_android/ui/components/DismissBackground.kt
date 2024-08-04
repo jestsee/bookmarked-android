@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SwipeToDismissBoxState
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,15 +15,15 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun DismissBackground(dismissState: SwipeToDismissBoxState) {
-    val color = when (dismissState.dismissDirection) {
-        SwipeToDismissBoxValue.Settled -> Color.Transparent
-        else -> Color(0xFFFF1744)
-    }
+//    val color = when (dismissState.dismissDirection) {
+//        SwipeToDismissBoxValue.Settled -> Color.Transparent
+//        else -> Primary
+//    }
 
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .background(color)
+            .background(Color.Transparent)
             .padding(32.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
